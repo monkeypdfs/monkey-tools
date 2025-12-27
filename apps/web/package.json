@@ -12,19 +12,40 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@imgly/background-removal": "^1.7.0",
+    "@pdfsmaller/pdf-encrypt-lite": "^1.0.1",
     "@workspace/ui": "workspace:*",
+    "browser-image-compression": "^2.0.2",
+    "heic2any": "^0.0.4",
+    "jspdf": "^3.0.4",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.475.0",
-    "next": "16.0.10",
+    "next": "16.1.1",
     "next-themes": "^0.4.6",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1"
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^5.4.449",
+    "qrcode": "^1.5.4",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "sonner": "^2.0.7",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.17",
-    "@types/node": "^20.19.25",
-    "@types/react": "^19.2.7",
-    "@types/react-dom": "^19.2.3",
+    "@tailwindcss/postcss": "^4.1.18",
+    "@types/node": "^20.19.27",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
     "@workspace/typescript-config": "workspace:*",
     "typescript": "^5.9.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "19.2.7",
+      "@types/react-dom": "19.2.3"
+    }
   }
 }

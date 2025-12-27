@@ -7,22 +7,15 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": [
-      "**",
-      "!**/node_modules",
-      "!**/.next",
-      "!**/dist",
-      "!**/.turbo",
-      "!**/*.css"
-    ]
+    "includes": ["**", "!**/node_modules", "!**/.next", "!**/dist", "!**/.turbo", "!**/*.css"]
   },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
     "indentWidth": 2,
-    "lineWidth": 80
+    "lineWidth": 130
   },
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "assist": { "actions": { "source": { "organizeImports": "off" } } },
   "linter": {
     "enabled": true,
     "rules": {

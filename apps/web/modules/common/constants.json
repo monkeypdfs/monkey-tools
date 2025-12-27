@@ -1,0 +1,317 @@
+{
+  "CATEGORIES": [
+    { "id": "All Tools", "icon": "layout-grid", "label": "All Tools" },
+    { "id": "PDF Tools", "icon": "file-text", "label": "PDF Tools" },
+    { "id": "Image Tools", "icon": "image", "label": "Image Tools" },
+    { "id": "Text Tools", "icon": "files", "label": "Text Tools" },
+    { "id": "AI Write", "icon": "pen-tool", "label": "AI Write" }
+  ],
+  "TOOLS": [
+    {
+      "title": "PDF to JPG",
+      "category": "Pdf Tools",
+      "description": "Convert PDF pages to JPG images",
+      "icon": "file-image",
+      "iconColor": "text-red-500",
+      "bgColor": "bg-red-100",
+      "type": "PDF Tools",
+      "link": "/pdf/pdf-to-jpg"
+    },
+    {
+      "title": "JPG to PDF",
+      "category": "Pdf Tools",
+      "description": "Convert JPG images to PDF",
+      "icon": "file-text",
+      "iconColor": "text-orange-500",
+      "bgColor": "bg-orange-100",
+      "type": "PDF Tools",
+      "link": "/pdf/jpg-to-pdf"
+    },
+    {
+      "title": "Merge PDF",
+      "category": "Pdf Tools",
+      "description": "Merge multiple PDF files into one",
+      "icon": "merge",
+      "iconColor": "text-purple-500",
+      "bgColor": "bg-purple-100",
+      "type": "PDF Tools",
+      "link": "/pdf/merge-pdf"
+    },
+    {
+      "title": "Split PDF",
+      "category": "Pdf Tools",
+      "description": "Split PDF into separate files",
+      "icon": "scissors",
+      "iconColor": "text-red-400",
+      "bgColor": "bg-red-50",
+      "type": "PDF Tools",
+      "link": "/pdf/split-pdf"
+    },
+    {
+      "title": "Compress PDF",
+      "category": "Pdf Tools",
+      "description": "Reduce PDF file size",
+      "icon": "minimize-2",
+      "iconColor": "text-pink-500",
+      "bgColor": "bg-pink-100",
+      "type": "PDF Tools",
+      "link": "/pdf/compress-pdf"
+    },
+    {
+      "title": "Protect PDF",
+      "category": "Pdf Tools",
+      "description": "Add password protection to PDF",
+      "icon": "lock",
+      "iconColor": "text-gray-500",
+      "bgColor": "bg-gray-100",
+      "type": "PDF Tools",
+      "link": "/pdf/protect-pdf"
+    },
+    {
+      "title": "Unlock PDF",
+      "category": "Pdf Tools",
+      "description": "Remove password from PDF",
+      "icon": "unlock",
+      "iconColor": "text-blue-400",
+      "bgColor": "bg-blue-50",
+      "type": "PDF Tools",
+      "link": "/pdf/unlock-pdf"
+    },
+    {
+      "title": "Rotate PDF",
+      "category": "Pdf Tools",
+      "description": "Rotate PDF pages",
+      "icon": "rotate-cw",
+      "iconColor": "text-green-500",
+      "bgColor": "bg-green-100",
+      "type": "PDF Tools",
+      "link": "/pdf/rotate-pdf"
+    },
+    {
+      "title": "PDF to Word",
+      "category": "Pdf Tools",
+      "description": "Convert PDF to Word document",
+      "icon": "file-type",
+      "iconColor": "text-yellow-500",
+      "bgColor": "bg-yellow-100",
+      "type": "PDF Tools",
+      "link": "/pdf/pdf-to-word"
+    },
+    {
+      "title": "Word to PDF",
+      "category": "Pdf Tools",
+      "description": "Convert Word document to PDF",
+      "icon": "file-text",
+      "iconColor": "text-blue-500",
+      "bgColor": "bg-blue-100",
+      "type": "PDF Tools",
+      "link": "/pdf/word-to-pdf"
+    },
+    {
+      "title": "PDF to Excel",
+      "category": "Pdf Tools",
+      "description": "Convert PDF to Excel spreadsheet",
+      "icon": "file-spreadsheet",
+      "iconColor": "text-emerald-500",
+      "bgColor": "bg-emerald-100",
+      "type": "PDF Tools",
+      "link": "/pdf/pdf-to-excel"
+    },
+    {
+      "title": "Excel to PDF",
+      "category": "Pdf Tools",
+      "description": "Convert Excel spreadsheet to PDF",
+      "icon": "file-spreadsheet",
+      "iconColor": "text-teal-500",
+      "bgColor": "bg-teal-100",
+      "type": "PDF Tools",
+      "link": "/pdf/excel-to-pdf"
+    },
+    {
+      "title": "PDF to PowerPoint",
+      "category": "Pdf Tools",
+      "description": "Convert PDF to PowerPoint presentation",
+      "icon": "monitor-play",
+      "iconColor": "text-indigo-500",
+      "bgColor": "bg-indigo-100",
+      "type": "PDF Tools",
+      "link": "/pdf/pdf-to-powerpoint"
+    },
+    {
+      "title": "Advanced PDF Compressor",
+      "category": "Pdf Tools",
+      "description": "Advanced compression for smaller PDFs",
+      "icon": "zap",
+      "iconColor": "text-purple-600",
+      "bgColor": "bg-purple-50",
+      "type": "PDF Tools",
+      "link": "/pdf/advanced-pdf-compressor"
+    },
+    {
+      "title": "Remove Image Background",
+      "category": "Image Tools",
+      "description": "Remove background from images automatically",
+      "icon": "wand-sparkles",
+      "iconColor": "text-pink-500",
+      "bgColor": "bg-pink-100",
+      "type": "Image Tools",
+      "link": "/image/remove-image-background"
+    },
+    {
+      "title": "Resize Image",
+      "category": "Image Tools",
+      "description": "Resize images to desired dimensions",
+      "icon": "expand",
+      "iconColor": "text-blue-500",
+      "bgColor": "bg-blue-100",
+      "type": "Image Tools",
+      "link": "/image/resize-image"
+    },
+    {
+      "title": "Compress Image",
+      "category": "Image Tools",
+      "description": "Reduce image file size",
+      "icon": "minimize-2",
+      "iconColor": "text-green-500",
+      "bgColor": "bg-green-100",
+      "type": "Image Tools",
+      "link": "/image/compress-image"
+    },
+    {
+      "title": "WEBP to JPG",
+      "category": "Image Tools",
+      "description": "Convert WEBP images to JPG format",
+      "icon": "arrow-right-left",
+      "iconColor": "text-orange-500",
+      "bgColor": "bg-orange-100",
+      "type": "Image Tools",
+      "link": "/image/webp-to-jpg"
+    },
+    {
+      "title": "PNG to JPG",
+      "category": "Image Tools",
+      "description": "Convert PNG images to JPG format",
+      "icon": "arrow-right-left",
+      "iconColor": "text-purple-500",
+      "bgColor": "bg-purple-100",
+      "type": "Image Tools",
+      "link": "/image/png-to-jpg"
+    },
+    {
+      "title": "JPG to PNG",
+      "category": "Image Tools",
+      "description": "Convert JPG images to PNG format",
+      "icon": "arrow-right-left",
+      "iconColor": "text-red-500",
+      "bgColor": "bg-red-100",
+      "type": "Image Tools",
+      "link": "/image/jpg-to-png"
+    },
+    {
+      "title": "HEIC to JPG",
+      "category": "Image Tools",
+      "description": "Convert HEIC images to JPG format",
+      "icon": "arrow-right-left",
+      "iconColor": "text-teal-500",
+      "bgColor": "bg-teal-100",
+      "type": "Image Tools",
+      "link": "/image/heic-to-jpg"
+    },
+    {
+      "title": "Character Counter",
+      "category": "Text Tools",
+      "description": "Count characters in text",
+      "icon": "type",
+      "iconColor": "text-gray-500",
+      "bgColor": "bg-gray-100",
+      "type": "Text Tools",
+      "link": "/text/character-counter"
+    },
+    {
+      "title": "Word Counter",
+      "category": "Text Tools",
+      "description": "Count words in text",
+      "icon": "type",
+      "iconColor": "text-blue-500",
+      "bgColor": "bg-blue-100",
+      "type": "Text Tools",
+      "link": "/text/word-counter"
+    },
+    {
+      "title": "Hashtag Generator",
+      "category": "Text Tools",
+      "description": "Generate hashtags for social media",
+      "icon": "hash",
+      "iconColor": "text-purple-500",
+      "bgColor": "bg-purple-100",
+      "type": "Text Tools",
+      "link": "/text/hashtag-generator"
+    },
+    {
+      "title": "Caption Generator",
+      "category": "Text Tools",
+      "description": "Generate captions for posts",
+      "icon": "message-square",
+      "iconColor": "text-green-500",
+      "bgColor": "bg-green-100",
+      "type": "Text Tools",
+      "link": "/text/caption-generator"
+    },
+    {
+      "title": "Text Summarizer",
+      "category": "Text Tools",
+      "description": "Summarize long text",
+      "icon": "file-text",
+      "iconColor": "text-orange-500",
+      "bgColor": "bg-orange-100",
+      "type": "Text Tools",
+      "link": "/text/text-summarizer"
+    },
+    {
+      "title": "Text Rewriter / Paraphraser",
+      "category": "Text Tools",
+      "description": "Rewrite text in different words",
+      "icon": "pen-line",
+      "iconColor": "text-red-500",
+      "bgColor": "bg-red-100",
+      "type": "Text Tools",
+      "link": "/text/text-rewriter"
+    },
+    {
+      "title": "Strong Password Generator",
+      "category": "Text Tools",
+      "description": "Generate secure passwords",
+      "icon": "lock",
+      "iconColor": "text-indigo-500",
+      "bgColor": "bg-indigo-100",
+      "type": "Text Tools",
+      "link": "/text/strong-password-generator"
+    },
+    {
+      "title": "QR Code Generator",
+      "category": "Text Tools",
+      "description": "Generate QR codes from text",
+      "icon": "qr-code",
+      "iconColor": "text-teal-500",
+      "bgColor": "bg-teal-100",
+      "type": "Text Tools",
+      "link": "/text/qr-code-generator"
+    },
+    {
+      "title": "Simple AI Avatar Generator",
+      "category": "AI Write",
+      "description": "Generate simple AI-powered avatars",
+      "icon": "user",
+      "iconColor": "text-blue-500",
+      "bgColor": "bg-blue-100",
+      "type": "AI Write",
+      "link": "/ai/simple-ai-avatar-generator"
+    }
+  ],
+  "TOOLS_TYPE_MAP": {
+    "pdf": "Pdf Tools",
+    "image": "Image Tools",
+    "text": "Text Tools",
+    "ai": "AI Write"
+  }
+}
