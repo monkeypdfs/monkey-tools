@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Status {
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+model Job {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  sessionId   String
+  tool        String
+  status      Status    @default(IN_PROGRESS)
+  inputFile   String
+  outputFile  String?
+  metadata    Json?
+  error       String?
+  completedAt DateTime? @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("jobs")
+}

@@ -18,6 +18,7 @@
     "@imgly/background-removal": "^1.7.0",
     "@pdfsmaller/pdf-encrypt-lite": "^1.0.1",
     "@workspace/ui": "workspace:*",
+    "@workspace/database": "workspace:*",
     "browser-image-compression": "^2.0.2",
     "heic2any": "^0.0.4",
     "jspdf": "^3.0.4",
@@ -41,11 +42,5 @@
     "@types/react-dom": "19.2.3",
     "@workspace/typescript-config": "workspace:*",
     "typescript": "^5.9.3"
-  },
-  "pnpm": {
-    "overrides": {
-      "@types/react": "19.2.7",
-      "@types/react-dom": "19.2.3"
-    }
   }
 }
