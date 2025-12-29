@@ -7,8 +7,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const nextConfig = {
   transpilePackages: ["@workspace/ui", "@workspace/database", "@workspace/storage", "@workspace/queue"],
   outputFileTracingIncludes: {
-    '/api/**/*': ['./node_modules/.prisma/client/**/*'],
-    '/*': ['./node_modules/.prisma/client/**/*'],
+    '/api/**/*': ['./packages/database/src/generated/client/**/*'],
+    '/*': ['./packages/database/src/generated/client/**/*'],
   },
   turbopack: {
     root: path.join(__dirname, '../../'), // Points to monorepo root
