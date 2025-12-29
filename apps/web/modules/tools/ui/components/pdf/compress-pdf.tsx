@@ -3,6 +3,7 @@
 import axios from "axios";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
+import { JOB_TYPES } from "@workspace/types";
 import { Button } from "@workspace/ui/components/button";
 import { Progress } from "@workspace/ui/components/progress";
 import { useFileUpload } from "@/modules/common/hooks/use-file-upload";
@@ -52,7 +53,7 @@ export default function CompressPdf() {
     setStatus("compressing");
     try {
       const { data } = await axios.post("/api/jobs", {
-        tool: "compress-pdf",
+        tool: JOB_TYPES.COMPRESS_PDF,
         inputFile: fileKey,
       });
       setJobId(data.jobId);
@@ -81,7 +82,7 @@ export default function CompressPdf() {
         } catch (error) {
           console.error("Polling failed:", error);
         }
-      }, 2000);
+      }, 3000);
     }
 
     return () => clearInterval(interval);

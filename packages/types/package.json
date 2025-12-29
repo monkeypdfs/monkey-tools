@@ -1,16 +1,12 @@
 {
-  "name": "@workspace/queue",
+  "name": "@workspace/types",
   "version": "0.0.0",
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "type": "module",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch"
-  },
-  "dependencies": {
-    "bullmq": "^5.66.4",
-    "ioredis": "^5.8.2"
   },
   "devDependencies": {
     "@types/node": "^20.19.27",

@@ -1,0 +1,14 @@
+{
+  "extends": "@workspace/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@workspace/database": ["../../packages/database/src/index.ts"],
+      "@workspace/queue": ["../../packages/queue/src/index.ts"],
+      "@workspace/storage": ["../../packages/storage/src/index.ts"],
+      "@workspace/types": ["../../packages/types/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

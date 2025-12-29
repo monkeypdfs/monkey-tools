@@ -1,4 +1,4 @@
-import IORedis, { type RedisOptions } from "ioredis";
+import { Redis, type RedisOptions } from "ioredis";
 
 const url = process.env.REDIS_URL;
 
@@ -19,6 +19,6 @@ const redisConfig: RedisOptions = {
 };
 
 // Singleton to prevent too many connections
-const connection = new IORedis(redisConfig);
+const connection = new Redis(redisConfig);
 
 export { connection };

@@ -1,6 +1,6 @@
 import { DM_Sans } from "next/font/google";
-import { Toaster } from "@workspace/ui/components/sonner";
 import { Providers } from "@/components/providers";
+import { Toaster } from "@workspace/ui/components/sonner";
 import "@workspace/ui/globals.css";
 
 const dmSans = DM_Sans({
