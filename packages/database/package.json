@@ -5,9 +5,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "postinstall": "prisma generate",
-    "build": "prisma generate && tsc",
-    "db:generate": "prisma generate",
+    "postinstall": "prisma generate && node postinstall.cjs",
+    "build": "prisma generate && node postinstall.cjs && tsc",
+    "db:generate": "prisma generate && node postinstall.cjs",
     "db:push": "prisma db push",
     "dev": "tsc --watch"
   },
