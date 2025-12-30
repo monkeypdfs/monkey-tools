@@ -1,5 +1,5 @@
 import { Queue, Worker } from "bullmq";
-import { connection } from "./connection.js";
+import { connection } from "./connection";
 
 export const QUEUE_NAME = "job-queue";
 

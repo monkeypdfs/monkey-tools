@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { prop, getModelForClass, modelOptions, Severity } from "@typegoose/typegoose";
 
 export enum Status {

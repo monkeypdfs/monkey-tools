@@ -2,8 +2,12 @@
   "name": "@workspace/database",
   "version": "0.0.0",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch"
@@ -15,6 +19,7 @@
   "dependencies": {
     "@typegoose/typegoose": "^13.0.0",
     "dotenv": "^17.2.3",
-    "mongoose": "^9.0.2"
+    "mongoose": "^9.0.2",
+    "reflect-metadata": "^0.2.2"
   }
 }

@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./init.js";
 import processor from "./processors/task.js";
 import { connectToDatabase } from "@workspace/database";
 import { createWorker } from "@workspace/queue";
