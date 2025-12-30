@@ -6,11 +6,6 @@ import { JobModel, Status, connectToDatabase } from "@workspace/database";
 export async function POST(req: Request) {
   await connectToDatabase();
   try {
-    // Validate request method
-    if (req.method !== "POST") {
-      return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
-    }
-
     // Parse and validate request body
 
     // biome-ignore lint/suspicious/noImplicitAnyLet: <No proper type defination is available>

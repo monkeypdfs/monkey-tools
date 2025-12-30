@@ -55,6 +55,9 @@ export default function CompressPdf() {
       const { data } = await axios.post("/api/jobs", {
         tool: JOB_TYPES.COMPRESS_PDF,
         inputFile: fileKey,
+        metadata: {
+          compressionLevel: "medium",
+        },
       });
       setJobId(data.jobId);
     } catch (error) {

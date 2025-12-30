@@ -1,3 +1,3 @@
-export * from "./connect";
-export * from "./models/Job";
+export * from "./connect.js";
+export * from "./models/Job.js";
 export { mongoose } from "@typegoose/typegoose";

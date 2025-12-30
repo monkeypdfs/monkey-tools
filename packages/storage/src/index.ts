@@ -1,3 +1,6 @@
+import { pipeline } from "node:stream/promises";
+import { Upload } from "@aws-sdk/lib-storage";
+import { createReadStream, createWriteStream } from "node:fs";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 
@@ -29,5 +32,30 @@ export async function getDownloadUrl(key: string) {
   const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key });
   return getSignedUrl(s3, command, { expiresIn: 3600 });
 }
+
+export async function downloadFile(key: string, localPath: string) {
+  const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key });
+  const response = await s3.send(command);
+
+  if (!response.Body) throw new Error("File not found in S3");
+
+  await pipeline(response.Body as NodeJS.ReadableStream, createWriteStream(localPath));
+}
+
+export const uploadFromFile = async (localPath: string, key: string, contentType = "application/pdf") => {
+  const fileStream = createReadStream(localPath);
+
+  const upload = new Upload({
+    client: s3,
+    params: {
+      Bucket: BUCKET_NAME,
+      Key: key,
+      Body: fileStream,
+      ContentType: contentType,
+    },
+  });
+
+  await upload.done();
+};
 
 export { s3 };
