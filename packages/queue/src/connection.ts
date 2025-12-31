@@ -16,6 +16,23 @@ const redisConfig: RedisOptions = {
   // Enable TLS if protocol is rediss:
   tls: redisUrl.protocol === "rediss:" ? { rejectUnauthorized: false } : undefined,
   maxRetriesPerRequest: null,
+  // Connection pool settings for better performance
+  enableReadyCheck: true,
+  enableOfflineQueue: true,
+  connectTimeout: 10000,
+  retryStrategy: (times: number) => {
+    if (times > 3) {
+      return null; // Stop retrying after 3 attempts
+    }
+    return Math.min(times * 200, 2000); // Exponential backoff
+  },
+  reconnectOnError: (err: Error) => {
+    const targetError = "READONLY";
+    if (err.message.includes(targetError)) {
+      return true; // Reconnect on READONLY errors
+    }
+    return false;
+  },
 };
 
 // Singleton to prevent too many connections
