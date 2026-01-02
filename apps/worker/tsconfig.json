@@ -2,15 +2,12 @@
   "extends": "@workspace/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "dist",
+    "rootDir": "src",
     "baseUrl": ".",
-    "module": "esnext",
-    "moduleResolution": "bundler",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "paths": {
-      "@workspace/queue": ["../../packages/queue/src/index.ts"],
-      "@workspace/types": ["../../packages/types/src/index.ts"]
-    }
+    "emitDecoratorMetadata": true
   },
   "include": ["src"]
 }
