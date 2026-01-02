@@ -1,0 +1,16 @@
+services:
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    container_name: monkey-tools-worker
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - DO_SPACES_ENDPOINT=${DO_SPACES_ENDPOINT}
+      - DO_SPACES_ACCESS_KEY=${DO_SPACES_ACCESS_KEY}
+      - DO_SPACES_SECRET_KEY=${DO_SPACES_SECRET_KEY}
+      - DO_SPACES_BUCKET=${DO_SPACES_BUCKET}
+      - DO_SPACES_REGION=${DO_SPACES_REGION}
