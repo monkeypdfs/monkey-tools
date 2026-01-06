@@ -2,7 +2,7 @@
 
 import { Wrench } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { Tool } from "@workspace/database";
+import type { Category, Tool } from "@workspace/database";
 import type { IconName } from "lucide-react/dynamic";
 import { DynamicIcon } from "@/modules/common/ui/components/dynamic-icon";
 import { useRemoveTool } from "@/modules/dashboard/hooks/use-remove-tool";
@@ -15,7 +15,7 @@ export const ToolsView = () => {
     <EntityList
       items={tools.data.items}
       getKey={(tool) => tool._id}
-      renderItem={(tool) => <ToolItem data={tool} />}
+      renderItem={(tool) => <ToolItem data={tool as Tool} />}
       emptyView={<ToolsEmpty />}
       className=""
     />
@@ -38,11 +38,14 @@ export const ToolItem = ({ data }: { data: Tool }) => {
   const handleRemove = () => {
     removeTool.mutate({ id: data._id as string });
   };
+
+  const categoryName = (data.category as Category)?.name || "No Category";
+
   return (
     <EntityItem
       href={`/dashboard/tools/${data._id}`}
       title={data.title}
-      subtitle={data.category}
+      subtitle={categoryName}
       image={
         <div className="flex items-center justify-center size-8">
           {data.icon ? <DynamicIcon name={data.icon as IconName} className="size-5" /> : <Wrench className="size-5" />}

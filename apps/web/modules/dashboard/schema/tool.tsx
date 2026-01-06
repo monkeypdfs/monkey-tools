@@ -10,6 +10,9 @@ export const createToolSchema = z.object({
   componentName: z.string().min(2, {
     message: "Component name must be at least 2 characters.",
   }),
+  categoryId: z.string().min(1, {
+    message: "Category is required.",
+  }),
   seoTitle: z.string().optional(),
   seoDescription: z.string().optional(),
   seoKeywords: z.string().optional(),

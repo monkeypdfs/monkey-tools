@@ -1,7 +1,7 @@
 import z from "zod";
 import { TRPCError } from "@trpc/server";
-import { ToolModel } from "@workspace/database";
 import { PAGINATION } from "@/modules/common/constants";
+import { type Category, ToolModel } from "@workspace/database";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { createToolSchema } from "@/modules/dashboard/schema/tool";
 
@@ -12,6 +12,7 @@ export const toolsRouter = createTRPCRouter({
         title: input.title,
         link: input.link,
         componentName: input.componentName,
+        category: input.categoryId,
         seoTitle: input.seoTitle,
         seoDescription: input.seoDescription,
         seoKeywords: input.seoKeywords,
@@ -46,15 +47,32 @@ export const toolsRouter = createTRPCRouter({
         const searchRegex = new RegExp(search, "i");
 
         const [items, totalCount] = await Promise.all([
-          ToolModel.find({
-            createdBy: ctx.auth.id,
-            isActive: true,
-            title: { $regex: searchRegex },
-          })
-            .sort({ createdAt: -1 })
-            .skip((page - 1) * pageSize)
-            .limit(pageSize)
-            .lean(),
+          ToolModel.aggregate([
+            {
+              $match: {
+                createdBy: ctx.auth.id,
+                isActive: true,
+                title: { $regex: searchRegex },
+              },
+            },
+            {
+              $lookup: {
+                from: "categories",
+                localField: "category",
+                foreignField: "_id",
+                as: "category",
+              },
+            },
+            {
+              $unwind: {
+                path: "$category",
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+            { $sort: { createdAt: -1 } },
+            { $skip: (page - 1) * pageSize },
+            { $limit: pageSize },
+          ]),
           ToolModel.countDocuments({
             createdBy: ctx.auth.id,
             isActive: true,
@@ -70,6 +88,7 @@ export const toolsRouter = createTRPCRouter({
           items: items.map((tool) => ({
             ...tool,
             _id: tool._id.toString(),
+            category: tool.category ? { ...tool.category, _id: tool.category._id.toString() } : null,
           })),
           page,
           pageSize,
@@ -88,7 +107,7 @@ export const toolsRouter = createTRPCRouter({
 
   getOne: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {
     try {
-      const tool = await ToolModel.findById(input.id).lean();
+      const tool = await ToolModel.findById(input.id).populate("category").lean();
       if (!tool) {
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -98,7 +117,11 @@ export const toolsRouter = createTRPCRouter({
 
       return {
         success: true,
-        tool: { ...tool, _id: tool._id.toString() },
+        tool: {
+          ...tool,
+          _id: tool._id.toString(),
+          category: tool.category ? { ...(tool.category as Category), _id: (tool.category as Category)?._id?.toString() } : null,
+        },
       };
     } catch (error) {
       if (error instanceof TRPCError) throw error;

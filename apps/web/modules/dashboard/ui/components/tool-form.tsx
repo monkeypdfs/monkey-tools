@@ -2,12 +2,16 @@
 
 import type * as z from "zod";
 import { useForm } from "react-hook-form";
+import { Loader2 } from "lucide-react";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
+import type { Category } from "@workspace/database";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { createToolSchema } from "@/modules/dashboard/schema/tool";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@workspace/ui/components/form";
-import { Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
 
 export type ToolFormValues = z.infer<typeof createToolSchema>;
 
@@ -19,12 +23,16 @@ interface ToolFormProps {
 }
 
 export const ToolForm = ({ defaultValues, onSubmit, submitLabel = "Save", disabled = false }: ToolFormProps) => {
+  const trpc = useTRPC();
+  const { data: categories, isLoading: isLoadingCategories } = useQuery(trpc.categories.getMany.queryOptions({}));
+
   const form = useForm<ToolFormValues>({
     resolver: zodResolver(createToolSchema),
     defaultValues: {
       title: "",
       link: "",
       componentName: "",
+      categoryId: "",
       seoTitle: "",
       seoDescription: "",
       seoKeywords: "",
@@ -66,19 +74,45 @@ export const ToolForm = ({ defaultValues, onSubmit, submitLabel = "Save", disabl
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="link"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tool URL Path</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g. /pdf-to-jpg" {...field} disabled={disabled} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="link"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tool URL Path</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. /pdf-to-jpg" {...field} disabled={disabled} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="categoryId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={disabled || isLoadingCategories}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categories?.items.map((category: Category) => (
+                        <SelectItem key={category._id} value={category._id as string}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
 
         <div className="space-y-4">
