@@ -15,8 +15,8 @@ export const ToolCard = ({ tool, link, categoryName }: ToolCardProps) => {
     <Link href={link}>
       <div className="flex flex-col items-start p-3 text-left transition-shadow duration-200 bg-white border shadow-sm cursor-pointer md:p-4 dark:bg-card rounded-xl hover:shadow-md border-border/50 group">
         <div className="flex items-center gap-3 mb-4">
-          <div className={cn("p-3 rounded-xl", tool.bgColor)}>
-            <DynamicIcon name={tool.icon as IconName} className={cn("w-6 h-6", tool.iconColor)} />
+          <div style={{ backgroundColor: tool.bgColor }} className={cn("p-3 rounded-xl")}>
+            <DynamicIcon name={tool.icon as IconName} style={{ color: tool.iconColor }} className={cn("w-6 h-6")} />
           </div>
           <div>
             <h3 className="text-xs font-bold md:text-base text-foreground">{tool.title}</h3>

@@ -10,10 +10,15 @@ export const createToolSchema = z.object({
   componentName: z.string().min(2, {
     message: "Component name must be at least 2 characters.",
   }),
+  description: z.string(),
   categoryId: z.string().min(1, {
     message: "Category is required.",
   }),
-  seoTitle: z.string().optional(),
-  seoDescription: z.string().optional(),
-  seoKeywords: z.string().optional(),
+  icon: z.string(),
+  iconColor: z.string(),
+  bgColor: z.string(),
+  seoTitle: z.string(),
+  seoDescription: z.string(),
+  seoKeywords: z.string(),
+  isActive: z.boolean(),
 });

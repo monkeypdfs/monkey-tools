@@ -1,16 +1,17 @@
 "use client";
 
-import type * as z from "zod";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
+import type { z } from "zod";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
 import type { Category } from "@workspace/database";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
+import { Switch } from "@workspace/ui/components/switch";
 import { createToolSchema } from "@/modules/dashboard/schema/tool";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@workspace/ui/components/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@workspace/ui/components/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
 
 export type ToolFormValues = z.infer<typeof createToolSchema>;
@@ -32,10 +33,15 @@ export const ToolForm = ({ defaultValues, onSubmit, submitLabel = "Save", disabl
       title: "",
       link: "",
       componentName: "",
+      description: "",
       categoryId: "",
+      icon: "",
+      iconColor: "",
+      bgColor: "",
       seoTitle: "",
       seoDescription: "",
       seoKeywords: "",
+      isActive: true,
       ...defaultValues,
     },
   });
@@ -74,6 +80,20 @@ export const ToolForm = ({ defaultValues, onSubmit, submitLabel = "Save", disabl
             />
           </div>
 
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Input placeholder="Brief description of the tool..." {...field} disabled={disabled} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <FormField
               control={form.control}
@@ -109,6 +129,68 @@ export const ToolForm = ({ defaultValues, onSubmit, submitLabel = "Save", disabl
                     </SelectContent>
                   </Select>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-foreground">Visual Configuration</h3>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="icon"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Icon Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. FileText" {...field} disabled={disabled} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="iconColor"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Icon Color</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. #FF0000 or text-red-500" {...field} disabled={disabled} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="bgColor"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Background Color</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. bg-blue-50" {...field} disabled={disabled} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="isActive"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start justify-between p-3 border rounded-lg shadow-sm">
+                  <div className="space-y-0.5">
+                    <FormLabel>Active Status</FormLabel>
+                    <FormDescription>Publicly visible.</FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} disabled={disabled} />
+                  </FormControl>
                 </FormItem>
               )}
             />
@@ -164,7 +246,7 @@ export const ToolForm = ({ defaultValues, onSubmit, submitLabel = "Save", disabl
 
         <div className="flex justify-end">
           <Button type="submit" className="w-full md:w-auto" disabled={disabled}>
-            {disabled && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {disabled && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             {submitLabel}
           </Button>
         </div>

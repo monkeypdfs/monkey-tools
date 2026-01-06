@@ -14,11 +14,15 @@ export const toolsRouter = createTRPCRouter({
         title: input.title,
         link: input.link,
         componentName: input.componentName,
+        description: input.description,
         category: input.categoryId,
+        icon: input.icon,
+        iconColor: input.iconColor,
+        bgColor: input.bgColor,
         seoTitle: input.seoTitle,
         seoDescription: input.seoDescription,
         seoKeywords: input.seoKeywords,
-        isActive: true,
+        isActive: input.isActive ?? true,
       });
 
       const savedTool = await tool.save();

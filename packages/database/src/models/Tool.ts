@@ -24,31 +24,31 @@ export class Tool {
   @prop({ required: true, minlength: 2 })
   public componentName!: string;
 
-  @prop()
-  public description?: string;
+  @prop({ required: true })
+  public description!: string;
 
   @prop({ ref: () => Category, required: true })
   public category!: Ref<Category>;
 
   // Visual properties
-  @prop()
-  public icon?: string;
+  @prop({ required: true })
+  public icon!: string;
 
-  @prop()
-  public iconColor?: string;
+  @prop({ required: true })
+  public iconColor!: string;
 
-  @prop()
-  public bgColor?: string;
+  @prop({ required: true })
+  public bgColor!: string;
 
   // SEO properties
-  @prop()
-  public seoTitle?: string;
+  @prop({ required: true })
+  public seoTitle!: string;
 
-  @prop()
-  public seoDescription?: string;
+  @prop({ required: true })
+  public seoDescription!: string;
 
-  @prop()
-  public seoKeywords?: string;
+  @prop({ required: true })
+  public seoKeywords!: string;
 
   @prop({ default: true })
   public isActive!: boolean;
