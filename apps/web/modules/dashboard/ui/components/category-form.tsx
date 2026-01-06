@@ -1,15 +1,13 @@
 "use client";
 
-import type * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
-import { createCategorySchema } from "@/modules/dashboard/schema/category";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@workspace/ui/components/form";
+import { Switch } from "@workspace/ui/components/switch";
+import { createCategorySchema, type CategoryFormValues } from "@/modules/dashboard/schema/category";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@workspace/ui/components/form";
 import { Loader2 } from "lucide-react";
-
-export type CategoryFormValues = z.infer<typeof createCategorySchema>;
 
 interface CategoryFormProps {
   defaultValues?: Partial<CategoryFormValues>;
@@ -26,6 +24,8 @@ export const CategoryForm = ({ defaultValues, onSubmit, submitLabel = "Save", di
       slug: "",
       description: "",
       icon: "",
+      color: "",
+      isActive: true,
       ...defaultValues,
     },
   });
@@ -85,9 +85,44 @@ export const CategoryForm = ({ defaultValues, onSubmit, submitLabel = "Save", di
               <FormItem>
                 <FormLabel>Icon Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g. FileText" {...field} disabled={disabled} />
+                  <Input placeholder="e.g. file-text" {...field} disabled={disabled} />
                 </FormControl>
                 <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="color"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Color</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g. #3b82f6" {...field} disabled={disabled} />
+                </FormControl>
+                <FormDescription>Hex color code for the category theme</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-foreground">Settings</h3>
+
+          <FormField
+            control={form.control}
+            name="isActive"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">Active Status</FormLabel>
+                  <FormDescription>Enable or disable this category</FormDescription>
+                </div>
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} disabled={disabled} />
+                </FormControl>
               </FormItem>
             )}
           />

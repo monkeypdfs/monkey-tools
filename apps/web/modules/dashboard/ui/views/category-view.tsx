@@ -6,9 +6,10 @@ import type { IconName } from "lucide-react/dynamic";
 import { Button } from "@workspace/ui/components/button";
 import { ArrowLeft, Edit, Eye, EyeOff, Hash, Type } from "lucide-react";
 import { DynamicIcon } from "@/modules/common/ui/components/dynamic-icon";
+import type { CategoryFormValues } from "@/modules/dashboard/schema/category";
+import { CategoryForm } from "@/modules/dashboard/ui/components/category-form";
 import { useUpdateCategory } from "@/modules/dashboard/hooks/use-update-category";
 import { useSuspenseCategory } from "@/modules/dashboard/hooks/use-suspense-categories";
-import { CategoryForm, type CategoryFormValues } from "@/modules/dashboard/ui/components/category-form";
 
 interface CategoryViewProps {
   id: string;

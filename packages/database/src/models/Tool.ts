@@ -61,10 +61,6 @@ export class Tool {
   @prop()
   public seoKeywords?: string;
 
-  // Metadata
-  @prop({ required: true })
-  public createdBy!: string;
-
   @prop({ default: true })
   public isActive!: boolean;
 

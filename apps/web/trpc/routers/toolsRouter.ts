@@ -6,7 +6,7 @@ import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { createToolSchema } from "@/modules/dashboard/schema/tool";
 
 export const toolsRouter = createTRPCRouter({
-  create: protectedProcedure.input(createToolSchema).mutation(async ({ input, ctx }) => {
+  create: protectedProcedure.input(createToolSchema).mutation(async ({ input }) => {
     try {
       const tool = new ToolModel({
         title: input.title,
@@ -16,7 +16,6 @@ export const toolsRouter = createTRPCRouter({
         seoTitle: input.seoTitle,
         seoDescription: input.seoDescription,
         seoKeywords: input.seoKeywords,
-        createdBy: ctx.auth.id,
         isActive: true,
       });
 
@@ -40,7 +39,7 @@ export const toolsRouter = createTRPCRouter({
         search: z.string().default(""),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const { page, pageSize, search } = input;
 
       try {
@@ -50,7 +49,6 @@ export const toolsRouter = createTRPCRouter({
           ToolModel.aggregate([
             {
               $match: {
-                createdBy: ctx.auth.id,
                 isActive: true,
                 title: { $regex: searchRegex },
               },
@@ -74,7 +72,6 @@ export const toolsRouter = createTRPCRouter({
             { $limit: pageSize },
           ]),
           ToolModel.countDocuments({
-            createdBy: ctx.auth.id,
             isActive: true,
             title: { $regex: searchRegex },
           }),
@@ -136,21 +133,13 @@ export const toolsRouter = createTRPCRouter({
         data: createToolSchema.partial(),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       try {
         const tool = await ToolModel.findById(input.id);
         if (!tool) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Tool not found",
-          });
-        }
-
-        // Check if user owns the tool or is admin
-        if (tool.createdBy !== ctx.auth.id) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Unauthorized to update this tool",
           });
         }
 

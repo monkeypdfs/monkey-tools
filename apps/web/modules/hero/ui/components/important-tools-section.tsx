@@ -1,14 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { cn } from "@workspace/ui/lib/utils";
 import type { IconName } from "lucide-react/dynamic";
-import { CATEGORIES, TOOLS } from "@/modules/common/constants";
-import { DynamicIcon } from "@/modules/common/ui/components/dynamic-icon";
+import { TOOLS } from "@/modules/common/constants";
 import { ToolCard } from "@/modules/common/ui/components/tool-card";
+import { DynamicIcon } from "@/modules/common/ui/components/dynamic-icon";
+import { useSuspenseCategories } from "@/modules/dashboard/hooks/use-suspense-categories";
 
 export const ImportantToolsSection = () => {
+  const categories = useSuspenseCategories();
+
   const [activeTab, setActiveTab] = useState("All Tools");
 
   const filteredTools = activeTab === "All Tools" ? TOOLS : TOOLS.filter((tool) => tool.type === activeTab);
@@ -33,21 +36,21 @@ export const ImportantToolsSection = () => {
         {/* Tabs */}
         <div className="flex flex-wrap justify-center gap-2 mb-12">
           <div className="bg-white dark:bg-card p-1.5 rounded-2xl md:rounded-full shadow-sm inline-flex flex-wrap justify-center gap-1 sm:flex-nowrap">
-            {CATEGORIES.map((category) => (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => setActiveTab(category.id)}
-                className={cn(
-                  "flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200",
-                  activeTab === category.id
-                    ? "bg-blue-500 text-white shadow-md"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-              >
-                <DynamicIcon name={category.icon as IconName} className="w-3 h-3 sm:w-4 sm:h-4" />
-                {category.label}
-              </button>
+            <Tab
+              key="all-tools"
+              title="All Tools"
+              icon="grid"
+              onClick={() => setActiveTab("All Tools")}
+              isActive={activeTab === "All Tools"}
+            />
+            {categories.data.items.map((category) => (
+              <Tab
+                key={category.name}
+                title={category.name}
+                icon={category.icon as IconName}
+                onClick={() => setActiveTab(category._id)}
+                isActive={activeTab === category._id}
+              />
             ))}
           </div>
         </div>
@@ -71,5 +74,29 @@ export const ImportantToolsSection = () => {
         )}
       </div>
     </section>
+  );
+};
+
+interface TabProps {
+  title: string;
+  icon: IconName;
+  onClick: () => void;
+  isActive: boolean;
+}
+
+const Tab = ({ title, icon, onClick, isActive }: TabProps) => {
+  return (
+    <button
+      key={title}
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200",
+        isActive ? "bg-blue-500 text-white shadow-md" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+      )}
+    >
+      <DynamicIcon name={icon} className="w-3 h-3 sm:w-4 sm:h-4" />
+      {title}
+    </button>
   );
 };

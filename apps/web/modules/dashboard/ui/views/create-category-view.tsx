@@ -1,13 +1,20 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCreateCategory } from "@/modules/dashboard/hooks/use-create-category";
-import { CategoryForm, type CategoryFormValues } from "@/modules/dashboard/ui/components/category-form";
+import { CategoryForm } from "@/modules/dashboard/ui/components/category-form";
+import type { CategoryFormValues } from "@/modules/dashboard/schema/category";
 
 export const CreateCategoryView = () => {
+  const router = useRouter();
   const createCategoryMutation = useCreateCategory();
 
   const onSubmit = (values: CategoryFormValues) => {
-    createCategoryMutation.mutate(values);
+    createCategoryMutation.mutate(values, {
+      onSuccess: (data) => {
+        router.push(`/dashboard/categories/${data._id}`);
+      },
+    });
   };
 
   return (

@@ -6,14 +6,14 @@ import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { createCategorySchema } from "@/modules/dashboard/schema/category";
 
 export const categoriesRouter = createTRPCRouter({
-  create: protectedProcedure.input(createCategorySchema).mutation(async ({ input, ctx }) => {
+  create: protectedProcedure.input(createCategorySchema).mutation(async ({ input }) => {
     try {
       const category = new CategoryModel({
         name: input.name,
         slug: input.slug,
         description: input.description,
         icon: input.icon,
-        createdBy: ctx.auth.id,
+        color: input.color,
         isActive: true,
       });
 
@@ -37,51 +37,41 @@ export const categoriesRouter = createTRPCRouter({
         search: z.string().default(""),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const { page, pageSize, search } = input;
+      const searchRegex = new RegExp(search, "i");
 
-      try {
-        const searchRegex = new RegExp(search, "i");
+      const [items, totalCount] = await Promise.all([
+        CategoryModel.find({
+          isActive: true,
+          name: { $regex: searchRegex },
+        })
+          .sort({ createdAt: 1 })
+          .skip((page - 1) * pageSize)
+          .limit(pageSize)
+          .lean(),
+        CategoryModel.countDocuments({
+          isActive: true,
+          name: { $regex: searchRegex },
+        }),
+      ]);
 
-        const [items, totalCount] = await Promise.all([
-          CategoryModel.find({
-            createdBy: ctx.auth.id,
-            isActive: true,
-            name: { $regex: searchRegex },
-          })
-            .sort({ createdAt: -1 })
-            .skip((page - 1) * pageSize)
-            .limit(pageSize)
-            .lean(),
-          CategoryModel.countDocuments({
-            createdBy: ctx.auth.id,
-            isActive: true,
-            name: { $regex: searchRegex },
-          }),
-        ]);
+      const totalPages = Math.ceil(totalCount / pageSize);
+      const hasNextPage = page < totalPages;
+      const hasPreviousPage = page > 1;
 
-        const totalPages = Math.ceil(totalCount / pageSize);
-        const hasNextPage = page < totalPages;
-        const hasPreviousPage = page > 1;
-
-        return {
-          items: items.map((category) => ({
-            ...category,
-            _id: category._id.toString(),
-          })),
-          page,
-          pageSize,
-          totalCount,
-          totalPages,
-          hasNextPage,
-          hasPreviousPage,
-        };
-      } catch (error) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: `Failed to fetch categories: ${error instanceof Error ? error.message : "Unknown error"}`,
-        });
-      }
+      return {
+        items: items.map((category) => ({
+          ...category,
+          _id: category._id.toString(),
+        })),
+        page,
+        pageSize,
+        totalCount,
+        totalPages,
+        hasNextPage,
+        hasPreviousPage,
+      };
     }),
 
   getOne: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {
@@ -114,21 +104,13 @@ export const categoriesRouter = createTRPCRouter({
         data: createCategorySchema.partial(),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       try {
         const category = await CategoryModel.findById(input.id);
         if (!category) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Category not found",
-          });
-        }
-
-        // Check if user owns the category or is admin
-        if (category.createdBy !== ctx.auth.id) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Unauthorized to update this category",
           });
         }
 

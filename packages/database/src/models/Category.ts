@@ -20,20 +20,20 @@ export class Category {
   @prop({ required: true, unique: true })
   public slug!: string;
 
-  @prop()
-  public description?: string;
+  @prop({ required: true, minlength: 5 })
+  public description!: string;
 
-  @prop()
-  public icon?: string;
+  @prop({ required: true })
+  public icon!: string;
 
   @prop({ default: true })
   public isActive!: boolean;
 
-  @prop({ required: true })
-  public createdBy!: string;
+  @prop({ default: 0 })
+  public toolsCount!: number;
 
-  public createdAt?: Date;
-  public updatedAt?: Date;
+  @prop({ required: true })
+  public color!: string;
 }
 
 export const CategoryModel =
