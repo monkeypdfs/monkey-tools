@@ -17,3 +17,10 @@ export const TOOLS_CATEGORY_MAP = Object.keys(TOOLS_TYPE_MAP).reduce(
   },
   {} as Record<ToolsCategory, typeof TOOLS>,
 );
+
+export const PAGINATION = {
+  DEFAULT_PAGE: 1,
+  DEFAULT_PAGE_SIZE: 10,
+  MAX_PAGE_SIZE: 100,
+  MIN_PAGE_SIZE: 1,
+};

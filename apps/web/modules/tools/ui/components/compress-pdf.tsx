@@ -11,6 +11,7 @@ import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { HowToStep } from "@/modules/common/ui/components/how-to-step";
 import { Loader2, Download, FileIcon, RefreshCw, CheckCircle } from "lucide-react";
 import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
+import Link from "next/link";
 
 export default function CompressPdf() {
   const [file, setFile] = useState<File | null>(null);
@@ -135,7 +136,7 @@ export default function CompressPdf() {
 
             {status === "uploaded" && file && (
               <div className="space-y-6">
-                <div className="flex items-center p-4 space-x-4 border rounded-lg border-border bg-muted/50 max-w-full">
+                <div className="flex items-center max-w-full p-4 space-x-4 border rounded-lg border-border bg-muted/50">
                   <FileIcon className="w-8 h-8 text-red-500 shrink-0" />
                   <div className="flex-1 min-w-0 text-left">
                     <p className="font-medium truncate">{file.name}</p>
@@ -177,10 +178,10 @@ export default function CompressPdf() {
                 <div className="flex flex-col space-y-3">
                   {downloadUrl && (
                     <Button asChild className="w-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all" size="lg">
-                      <a href={downloadUrl} download target="_blank" rel="noopener noreferrer">
+                      <Link href={downloadUrl} download target="_blank" rel="noopener noreferrer">
                         <Download className="w-4 h-4 mr-2" />
                         Download Compressed PDF
-                      </a>
+                      </Link>
                     </Button>
                   )}
                   <Button variant="outline" onClick={handleReset} className="w-full">

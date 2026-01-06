@@ -3,14 +3,20 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useTheme } from "next-themes";
+import { useTRPC } from "@/trpc/client";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
-import { useEffect, useState } from "react";
+import type { IconName } from "lucide-react/dynamic";
+import { DynamicIcon } from "@/modules/common/ui/components/dynamic-icon";
+import { Menu, Search, Share2, Moon, Sun, ChevronDown } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
-import { Menu, Search, Share2, Moon, Sun, ChevronDown, FileText, ImageIcon, PenTool, BrainIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@workspace/ui/components/dropdown-menu";
 
 export const HeroNavbar = () => {
+  const trpc = useTRPC();
+  const { data: categories } = useQuery(trpc.categories.getMany.queryOptions({}));
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -28,13 +34,6 @@ export const HeroNavbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navItems = [
-    { label: "PDF", icon: FileText },
-    { label: "Image", icon: ImageIcon },
-    { label: "Text", icon: PenTool },
-    { label: "AI", icon: BrainIcon },
-  ];
-
   return (
     <nav className={`sticky top-0 z-50 w-full ${scrolled ? "border-b" : ""} bg-background transition-all duration-300`}>
       <div className="container flex items-center justify-between h-16 px-4 mx-auto">
@@ -51,15 +50,15 @@ export const HeroNavbar = () => {
 
         {/* Center: Desktop Nav */}
         <div className="items-center hidden gap-1 lg:flex">
-          {navItems.map((item) => (
-            <DropdownMenu key={item.label}>
+          {categories?.items?.map((item) => (
+            <DropdownMenu key={item.name}>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   className="flex items-center gap-1 text-base font-medium text-muted-foreground hover:text-foreground"
-                  aria-labelledby={item.label}
+                  aria-labelledby={item.name}
                 >
-                  {item.label} <ChevronDown className="w-4 h-4 opacity-50" />
+                  {item.name} <ChevronDown className="w-4 h-4 opacity-50" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="center">
@@ -140,15 +139,15 @@ export const HeroNavbar = () => {
                   <Input type="search" placeholder="Search" className="pl-6 bg-muted/50" />
                 </div>
                 <div className="flex flex-col gap-1">
-                  {navItems.map((item) => (
+                  {categories?.items?.map((item) => (
                     <Button
-                      key={item.label}
+                      key={item.name}
                       variant="ghost"
                       className="justify-start h-12 text-lg font-medium"
-                      aria-labelledby={item.label}
+                      aria-labelledby={item.name}
                     >
-                      <item.icon className="w-5 h-5 mr-2" />
-                      {item.label}
+                      <DynamicIcon name={item.icon as IconName} className="w-5 h-5 mr-2" />
+                      {item.name}
                     </Button>
                   ))}
                 </div>

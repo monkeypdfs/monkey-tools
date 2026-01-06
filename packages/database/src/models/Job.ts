@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import mongoose from "mongoose";
 import { prop, getModelForClass, modelOptions, Severity } from "@typegoose/typegoose";
 
 export enum Status {
@@ -39,4 +40,4 @@ export class Job {
   public completedAt?: Date;
 }
 
-export const JobModel = getModelForClass(Job);
+export const JobModel = (mongoose.models.Job as ReturnType<typeof getModelForClass<typeof Job>>) || getModelForClass(Job);
