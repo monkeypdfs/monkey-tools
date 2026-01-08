@@ -6,7 +6,6 @@ import { useState, useCallback } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
-import { HowToStep } from "@/modules/common/ui/components/how-to-step";
 import { Alert, AlertTitle, AlertDescription } from "@workspace/ui/components/alert";
 import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 import { Download, QrCode, Loader2, AlertTriangle, CheckCircle, Link } from "lucide-react";

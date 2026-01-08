@@ -6,7 +6,6 @@ import { jsPDF } from "jspdf";
 import { useState, useCallback } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { Progress } from "@workspace/ui/components/progress";
-import { HowToStep } from "@/modules/common/ui/components/how-to-step";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { Download, Loader2, FileSpreadsheet, AlertTriangle } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@workspace/ui/components/alert";

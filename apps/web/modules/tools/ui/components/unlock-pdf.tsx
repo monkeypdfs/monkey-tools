@@ -8,7 +8,6 @@ import { Button } from "@workspace/ui/components/button";
 import { MAX_FILE_SIZE } from "@/modules/common/constants";
 import { Progress } from "@workspace/ui/components/progress";
 import { CircleCheck, Download, Loader2, Unlock } from "lucide-react";
-import { HowToStep } from "@/modules/common/ui/components/how-to-step";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 

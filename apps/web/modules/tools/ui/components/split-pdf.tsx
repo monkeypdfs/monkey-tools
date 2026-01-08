@@ -8,7 +8,6 @@ import { Download, Plus, Loader2 } from "lucide-react";
 import { MAX_FILE_SIZE } from "@/modules/common/constants";
 import { Progress } from "@workspace/ui/components/progress";
 import { usePdfManager } from "@/modules/common/hooks/use-pdf-manager";
-import { HowToStep } from "@/modules/common/ui/components/how-to-step";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 import { SelectablePDFGrid } from "@/modules/common/ui/components/selectable-pdf-grid";

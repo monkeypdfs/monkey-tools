@@ -6,7 +6,6 @@ import NextImage from "next/image";
 import { Button } from "@workspace/ui/components/button";
 import { Progress } from "@workspace/ui/components/progress";
 import { useState, useCallback, useRef, useEffect } from "react";
-import { HowToStep } from "@/modules/common/ui/components/how-to-step";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { Alert, AlertTitle, AlertDescription } from "@workspace/ui/components/alert";
 import { Download, Loader2, ImageIcon, AlertTriangle, Trash2 } from "lucide-react";

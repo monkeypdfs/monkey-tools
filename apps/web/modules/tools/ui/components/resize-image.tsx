@@ -7,7 +7,6 @@ import { Label } from "@workspace/ui/components/label";
 import { useState, useRef, useCallback } from "react";
 import { Switch } from "@workspace/ui/components/switch";
 import { Progress } from "@workspace/ui/components/progress";
-import { HowToStep } from "@/modules/common/ui/components/how-to-step";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { Download, RotateCcw, Loader2, AlertTriangle } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@workspace/ui/components/radio-group";
@@ -409,8 +408,7 @@ export default function ResizeImage() {
         )}
 
         {/* How to Use */}
-        <section className="max-w-3xl mx-auto mt-16">
-        </section>
+        <section className="max-w-3xl mx-auto mt-16"></section>
 
         {/* Hidden canvas for processing */}
         <canvas ref={canvasRef} className="hidden" />

@@ -5,7 +5,6 @@ import { Button } from "@workspace/ui/components/button";
 import { Progress } from "@workspace/ui/components/progress";
 import { FileSpreadsheet, X, FileText, Download } from "lucide-react";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
-import { HowToStep } from "@/modules/common/ui/components/how-to-step";
 import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 
 export default function PdfToExcel() {

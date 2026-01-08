@@ -9,7 +9,6 @@ import { Progress } from "@workspace/ui/components/progress";
 import { MAX_FILE_SIZE } from "@/modules/common/constants";
 import { encryptPDF } from "@pdfsmaller/pdf-encrypt-lite";
 import { CircleCheck, Download, Loader2, Lock } from "lucide-react";
-import { HowToStep } from "@/modules/common/ui/components/how-to-step";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 

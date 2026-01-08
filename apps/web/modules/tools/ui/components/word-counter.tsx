@@ -3,7 +3,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { Label } from "@workspace/ui/components/label";
-import { HowToStep } from "@/modules/common/ui/components/how-to-step";
 import { Alert, AlertTitle, AlertDescription } from "@workspace/ui/components/alert";
 import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 import { Trash2, Copy, BookOpen, Clock, TrendingUp, Hash, CheckCircle } from "lucide-react";

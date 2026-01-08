@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { Button } from "@workspace/ui/components/button";
 import { Progress } from "@workspace/ui/components/progress";
 import { useState, useCallback, useEffect } from "react";
-import { HowToStep } from "@/modules/common/ui/components/how-to-step";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { removeBackground, type Config } from "@imgly/background-removal";
 import { Alert, AlertTitle, AlertDescription } from "@workspace/ui/components/alert";

@@ -7,7 +7,6 @@ import { degrees, PDFDocument } from "pdf-lib";
 import { Button } from "@workspace/ui/components/button";
 import { Progress } from "@workspace/ui/components/progress";
 import { MAX_FILE_SIZE } from "@/modules/common/constants";
-import { HowToStep } from "@/modules/common/ui/components/how-to-step";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { usePdfManager } from "@/modules/common/hooks/use-pdf-manager";
 import type { UploadedFile } from "@/modules/common/hooks/use-pdf-manager";
