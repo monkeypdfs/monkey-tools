@@ -31,10 +31,10 @@ export const ToolView = async ({ toolCategory, tool }: ToolViewProps) => {
     return (
       <div className="container px-4 py-12 mx-auto">
         {/* H1 + Intro */}
-        <div className="mb-12 text-center">
-          <h1 className="mb-4 text-4xl font-bold md:text-5xl">{toolData.h1Heading || toolData.title}</h1>
+        <div className="text-center">
+          <h1 className="max-w-4xl mx-auto mt-10 text-4xl font-bold md:text-5xl">{toolData.h1Heading || toolData.title}</h1>
           {toolData.introText && (
-            <p className="max-w-3xl mx-auto text-lg leading-relaxed text-muted-foreground">{toolData.introText}</p>
+            <p className="mt-5 max-w-3xl mx-auto text-lg leading-relaxed text-muted-foreground">{toolData.introText}</p>
           )}
         </div>
 

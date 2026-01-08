@@ -205,13 +205,10 @@ export default function PngToJpg() {
   };
 
   return (
-    <div className="relative w-full py-10 overflow-hidden md:py-14 bg-background text-foreground">
+    <div className="relative w-full overflow-hidden bg-background text-foreground">
       <BackgroundElements />
 
       <div className="container relative z-10 px-4 mx-auto">
-        <h1 className="text-5xl font-bold text-center">PNG to JPG Converter</h1>
-        <p className="my-6 text-base text-center">Convert PNG images to JPG format with size optimization.</p>
-
         {/* Upload Section */}
         <section aria-labelledby="upload-section" className="max-w-3xl mx-auto">
           {files.length === 0 ? (
@@ -384,16 +381,6 @@ export default function PngToJpg() {
           </AlertDescription>
         </Alert>
       </div>
-
-      <HowToStep
-        title="How To Convert PNG to JPG"
-        subtitle="follow along with the steps below"
-        steps={[
-          { title: "Step 1", description: "Upload your PNG image" },
-          { title: "Step 2", description: "Click 'Convert to JPG' to process" },
-          { title: "Step 3", description: "Compare formats and download your JPG image" },
-        ]}
-      />
     </div>
   );
 }

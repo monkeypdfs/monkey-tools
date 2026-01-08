@@ -124,13 +124,10 @@ export default function ProtectPDF() {
   }, []);
 
   return (
-    <div className="relative w-full py-10 overflow-hidden md:py-14 bg-background text-foreground">
+    <div className="relative w-full overflow-hidden bg-background text-foreground">
       <BackgroundElements />
 
       <div className="container relative z-10 px-4 mx-auto">
-        <h1 className="text-5xl font-bold text-center">Protect PDF</h1>
-        <p className="my-6 text-base text-center">Add password protection to your PDF files.</p>
-
         {/* Upload Section */}
         <section aria-labelledby="upload-section" className="max-w-3xl mx-auto">
           {!file ? (
@@ -230,16 +227,6 @@ export default function ProtectPDF() {
           </div>
         )}
       </div>
-
-      <HowToStep
-        title="How To Protect PDF Files"
-        subtitle="follow along with the steps below"
-        steps={[
-          { title: "Step 1", description: "Upload your PDF file" },
-          { title: "Step 2", description: "Enter a password (minimum 4 characters)" },
-          { title: "Step 3", description: "Click 'Protect PDF' to add password protection" },
-        ]}
-      />
     </div>
   );
 }

@@ -74,13 +74,10 @@ export default function QRCodeGenerator() {
   }, []);
 
   return (
-    <div className="relative w-full py-10 overflow-hidden md:py-14 bg-background text-foreground">
+    <div className="relative w-full overflow-hidden bg-background text-foreground">
       <BackgroundElements />
 
       <div className="container relative z-10 px-4 mx-auto">
-        <h1 className="text-5xl font-bold text-center">QR Code Generator</h1>
-        <p className="my-6 text-base text-center">Generate QR codes for URLs, websites, and links instantly.</p>
-
         {/* Input Section */}
         <section aria-labelledby="input-section" className="max-w-2xl mx-auto">
           <div className="space-y-6">
@@ -206,16 +203,6 @@ export default function QRCodeGenerator() {
           </Alert>
         )}
       </div>
-
-      <HowToStep
-        title="How To Generate QR Code"
-        subtitle="follow along with the steps below"
-        steps={[
-          { title: "Step 1", description: "Enter your URL in the input field above" },
-          { title: "Step 2", description: "Click 'Generate QR Code' to create the code" },
-          { title: "Step 3", description: "Download or share your QR code image" },
-        ]}
-      />
     </div>
   );
 }

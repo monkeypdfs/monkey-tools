@@ -195,13 +195,10 @@ export default function ExcelToPDF() {
   };
 
   return (
-    <div className="relative w-full py-10 overflow-hidden md:py-14 bg-background text-foreground">
+    <div className="relative w-full overflow-hidden bg-background text-foreground">
       <BackgroundElements />
 
       <div className="container relative z-10 px-4 mx-auto">
-        <h1 className="text-5xl font-bold text-center">Excel to PDF</h1>
-        <p className="my-6 text-base text-center">Convert Excel spreadsheets to PDF format.</p>
-
         {/* Upload Section */}
         <section aria-labelledby="upload-section" className="max-w-3xl mx-auto">
           {files.length === 0 ? (
@@ -325,16 +322,6 @@ export default function ExcelToPDF() {
           </AlertDescription>
         </Alert>
       </div>
-
-      <HowToStep
-        title="How To Convert Excel to PDF"
-        subtitle="follow along with the steps below"
-        steps={[
-          { title: "Step 1", description: "Upload your Excel (.xlsx, .xls) files" },
-          { title: "Step 2", description: "Click 'Convert to PDF' to process" },
-          { title: "Step 3", description: "Download your PDF file" },
-        ]}
-      />
     </div>
   );
 }

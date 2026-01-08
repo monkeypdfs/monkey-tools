@@ -164,13 +164,10 @@ export default function MergePDF() {
   }, [resetManager]);
 
   return (
-    <div className="relative w-full py-10 overflow-hidden md:py-14 bg-background text-foreground">
+    <div className="relative w-full overflow-hidden bg-background text-foreground">
       <BackgroundElements />
 
       <div className="container relative z-10 px-4 mx-auto">
-        <h1 className="text-5xl font-bold text-center">Merge PDF Files</h1>
-        <p className="my-6 text-base text-center">Reorder pages, rotate, and merge multiple PDFs into one.</p>
-
         {/* Upload Section */}
         <section aria-labelledby="upload-section" className="max-w-5xl mx-auto">
           {pages.length === 0 && !isProcessing ? (
@@ -352,16 +349,6 @@ export default function MergePDF() {
           )}
         </div>
       </div>
-
-      <HowToStep
-        title="How To Merge/Combine PDF Files"
-        subtitle="follow along with the steps below"
-        steps={[
-          { title: "Step 1", description: "Upload your PDF files" },
-          { title: "Step 2", description: "Drag and drop pages to reorder them" },
-          { title: "Step 3", description: "Click 'Merge PDF' to download your new document" },
-        ]}
-      />
     </div>
   );
 }

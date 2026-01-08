@@ -54,7 +54,7 @@ export default function PdfToExcel() {
   };
 
   return (
-    <div className="relative w-full py-10 overflow-hidden md:py-14 bg-background text-foreground">
+    <div className="relative w-full overflow-hidden bg-background text-foreground">
       <BackgroundElements />
 
       {/* Maintenance Mode Banner */}
@@ -63,9 +63,6 @@ export default function PdfToExcel() {
       </div>
 
       <div className="container relative z-10 px-4 mx-auto mt-5">
-        <h1 className="text-5xl font-bold text-center">PDF to Excel</h1>
-        <p className="my-6 text-base text-center">Convert your PDF documents to editable Excel spreadsheets instantly.</p>
-
         <section aria-labelledby="upload-section" className="max-w-3xl mx-auto">
           {!file ? (
             <FileUpload
@@ -166,16 +163,6 @@ export default function PdfToExcel() {
           </div>
         </div>
       </div>
-
-      <HowToStep
-        title="How to Convert PDF to Excel"
-        subtitle="Follow these simple steps"
-        steps={[
-          { title: "Step 1", description: "Upload your PDF file to the converter." },
-          { title: "Step 2", description: "Wait for the conversion process to finish." },
-          { title: "Step 3", description: "Download your new Excel spreadsheet." },
-        ]}
-      />
     </div>
   );
 }
