@@ -21,7 +21,7 @@ export const HeroSection = async ({ categoriesPromise }: HeroSectionProps) => {
   ];
 
   return (
-    <section className="relative w-full overflow-hidden bg-background text-foreground">
+    <section className="mt-10 relative w-full overflow-hidden bg-background text-foreground">
       {/* Background Elements */}
       <BackgroundElements />
 
