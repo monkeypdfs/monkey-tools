@@ -1,5 +1,7 @@
 import { DM_Sans } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@workspace/ui/components/sonner";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Providers } from "@/modules/common/ui/components/providers";
 import "@workspace/ui/globals.css";
 
@@ -19,6 +21,8 @@ export default function RootLayout({
         <Providers>
           {children}
           <Toaster closeButton />
+          <Analytics />
+          <SpeedInsights />
         </Providers>
       </body>
     </html>
