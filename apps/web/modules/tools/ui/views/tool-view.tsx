@@ -19,7 +19,7 @@ export const ToolView = async ({ toolCategory, tool }: ToolViewProps) => {
 
   // Fetch tool data from database
   const category = await caller.categories.getCategoryWithTools({ slug: toolCategory });
-  const toolData = category.tools.find((t) => t.link === tool);
+  const toolData = category.tools.find((t) => [`/${tool}`, tool].includes(t.link));
 
   if (!toolData) {
     return <InvalidToolSelection />;
