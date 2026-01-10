@@ -4,6 +4,7 @@ import { Toaster } from "@workspace/ui/components/sonner";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Providers } from "@/modules/common/ui/components/providers";
 import "@workspace/ui/globals.css";
+import "react-image-crop/dist/ReactCrop.css";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],

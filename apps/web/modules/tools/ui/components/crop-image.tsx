@@ -2,22 +2,14 @@
 
 import { toast } from "sonner";
 import Image from "next/image";
-import Cropper from "react-easy-crop";
 import { useState, useCallback, useRef } from "react";
 import { Button } from "@workspace/ui/components/button";
-import { Label } from "@workspace/ui/components/label";
 import { Progress } from "@workspace/ui/components/progress";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
+import ReactCrop, { type Crop as CropType, type PixelCrop } from "react-image-crop";
 import { Alert, AlertTitle, AlertDescription } from "@workspace/ui/components/alert";
 import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 import { Download, Loader2, ImageIcon, Trash2, Crop, CheckCircle } from "lucide-react";
-
-interface CropArea {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
 
 interface CroppedImage {
   blob: Blob;
@@ -26,15 +18,14 @@ interface CroppedImage {
 }
 
 export default function CropImage() {
-  const [zoom, setZoom] = useState(1);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [crop, setCrop] = useState<CropType>();
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [aspectRatio, setAspectRatio] = useState<number | null>(null);
   const [croppedImage, setCroppedImage] = useState<CroppedImage | null>(null);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
 
+  const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const formatFileSize = (bytes: number) => {
@@ -72,6 +63,8 @@ export default function CropImage() {
       cleanup();
       setSelectedFile(file);
       setCroppedImage(null);
+      setCrop(undefined);
+      setCompletedCrop(undefined);
 
       const url = URL.createObjectURL(file);
       setImageSrc(url);
@@ -79,66 +72,79 @@ export default function CropImage() {
     [cleanup],
   );
 
-  const onCropComplete = useCallback((_croppedArea: CropArea, croppedAreaPixels: CropArea) => {
-    setCroppedAreaPixels(croppedAreaPixels);
+  const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { width, height } = e.currentTarget;
+
+    // Set initial crop to 80% of image centered
+    const cropWidth = width * 0.8;
+    const cropHeight = height * 0.8;
+    const x = (width - cropWidth) / 2;
+    const y = (height - cropHeight) / 2;
+
+    setCrop({
+      unit: "px",
+      x,
+      y,
+      width: cropWidth,
+      height: cropHeight,
+    });
   }, []);
 
-  const getCroppedImg = useCallback(async (imageSrc: string, pixelCrop: CropArea): Promise<Blob> => {
+  const getCroppedImg = useCallback(async (image: HTMLImageElement, pixelCrop: PixelCrop): Promise<Blob> => {
     return new Promise((resolve, reject) => {
-      const image = new window.Image();
-      image.crossOrigin = "anonymous";
-      image.onload = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) {
-          reject(new Error("Canvas not available"));
-          return;
-        }
+      const canvas = canvasRef.current;
+      if (!canvas) {
+        reject(new Error("Canvas not available"));
+        return;
+      }
 
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          reject(new Error("Canvas context not available"));
-          return;
-        }
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Canvas context not available"));
+        return;
+      }
 
-        canvas.width = pixelCrop.width;
-        canvas.height = pixelCrop.height;
+      const scaleX = image.naturalWidth / image.width;
+      const scaleY = image.naturalHeight / image.height;
 
-        ctx.drawImage(
-          image,
-          pixelCrop.x,
-          pixelCrop.y,
-          pixelCrop.width,
-          pixelCrop.height,
-          0,
-          0,
-          pixelCrop.width,
-          pixelCrop.height,
-        );
+      canvas.width = pixelCrop.width * scaleX;
+      canvas.height = pixelCrop.height * scaleY;
 
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              resolve(blob);
-            } else {
-              reject(new Error("Failed to create blob"));
-            }
-          },
-          "image/jpeg",
-          0.95,
-        );
-      };
-      image.onerror = () => reject(new Error("Failed to load image"));
-      image.src = imageSrc;
+      ctx.imageSmoothingQuality = "high";
+
+      ctx.drawImage(
+        image,
+        pixelCrop.x * scaleX,
+        pixelCrop.y * scaleY,
+        pixelCrop.width * scaleX,
+        pixelCrop.height * scaleY,
+        0,
+        0,
+        canvas.width,
+        canvas.height,
+      );
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error("Failed to create blob"));
+          }
+        },
+        "image/jpeg",
+        0.95,
+      );
     });
   }, []);
 
   const handleCrop = useCallback(async () => {
-    if (!imageSrc || !croppedAreaPixels || !selectedFile) return;
+    if (!imgRef.current || !completedCrop || !selectedFile) return;
 
     setIsProcessing(true);
 
     try {
-      const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
+      const croppedBlob = await getCroppedImg(imgRef.current, completedCrop);
       const croppedUrl = URL.createObjectURL(croppedBlob);
 
       const fileName = `${selectedFile.name.replace(/\.[^/.]+$/, "")}_cropped.jpg`;
@@ -156,7 +162,7 @@ export default function CropImage() {
     } finally {
       setIsProcessing(false);
     }
-  }, [imageSrc, croppedAreaPixels, selectedFile, getCroppedImg]);
+  }, [completedCrop, selectedFile, getCroppedImg]);
 
   const downloadCroppedImage = useCallback(() => {
     if (!croppedImage) return;
@@ -174,20 +180,9 @@ export default function CropImage() {
   const resetCrop = useCallback(() => {
     cleanup();
     setSelectedFile(null);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setAspectRatio(null);
-    setCroppedAreaPixels(null);
+    setCrop(undefined);
+    setCompletedCrop(undefined);
   }, [cleanup]);
-
-  const aspectRatioOptions = [
-    { label: "Free", value: null },
-    { label: "1:1 (Square)", value: 1 },
-    { label: "4:3", value: 4 / 3 },
-    { label: "16:9", value: 16 / 9 },
-    { label: "3:2", value: 3 / 2 },
-    { label: "2:3", value: 2 / 3 },
-  ];
 
   return (
     <div className="relative w-full overflow-hidden bg-background text-foreground">
@@ -221,24 +216,27 @@ export default function CropImage() {
                   <span className="text-sm text-muted-foreground">({formatFileSize(selectedFile.size)})</span>
                 </div>
 
-                {/* Crop Area */}
+                {/* Crop Area with Corner and Side Handles */}
                 {imageSrc && (
-                  <div className="relative h-96 lg:h-125 bg-muted rounded-lg overflow-hidden">
-                    <Cropper
-                      image={imageSrc}
-                      crop={crop}
-                      zoom={zoom}
-                      aspect={aspectRatio || undefined}
-                      onCropChange={setCrop}
-                      onZoomChange={setZoom}
-                      onCropComplete={onCropComplete}
-                    />
+                  <div className="relative bg-muted rounded-lg p-4">
+                    <div className="flex items-center justify-center">
+                      <ReactCrop crop={crop} onChange={(c) => setCrop(c)} onComplete={(c) => setCompletedCrop(c)} ruleOfThirds>
+                        {/** biome-ignore lint/performance/noImgElement: <Required native img element here> */}
+                        <img
+                          ref={imgRef}
+                          src={imageSrc}
+                          alt="Crop preview"
+                          onLoad={onImageLoad}
+                          style={{ maxWidth: "100%", maxHeight: "70vh" }}
+                        />
+                      </ReactCrop>
+                    </div>
                   </div>
                 )}
 
                 {/* Action Buttons */}
                 <div className="flex gap-4 justify-center">
-                  <Button size="lg" onClick={handleCrop} disabled={!croppedAreaPixels || isProcessing}>
+                  <Button size="lg" onClick={handleCrop} disabled={!completedCrop || isProcessing}>
                     {isProcessing ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -278,50 +276,14 @@ export default function CropImage() {
                       <h3 className="text-lg font-semibold">Crop Settings</h3>
                     </div>
 
-                    {/* Aspect Ratio Selection */}
-                    <div className="space-y-3">
-                      <Label className="text-sm font-medium">Aspect Ratio</Label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {aspectRatioOptions.map((option) => (
-                          <Button
-                            key={option.label}
-                            variant={aspectRatio === option.value ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setAspectRatio(option.value)}
-                            className="text-xs"
-                          >
-                            {option.label}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Zoom Control */}
-                    <div className="space-y-3">
-                      <Label className="text-sm font-medium">Zoom: {Math.round(zoom * 100)}%</Label>
-                      <input
-                        type="range"
-                        min={1}
-                        max={3}
-                        step={0.1}
-                        value={zoom}
-                        onChange={(e) => setZoom(Number(e.target.value))}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>100%</span>
-                        <span>300%</span>
-                      </div>
-                    </div>
-
                     {/* Crop Info */}
-                    {croppedAreaPixels && (
+                    {completedCrop && (
                       <div className="space-y-2 p-3 bg-muted rounded-lg">
                         <h4 className="text-sm font-medium">Selection Info</h4>
                         <div className="text-xs text-muted-foreground space-y-1">
-                          <div>Width: {Math.round(croppedAreaPixels.width)}px</div>
-                          <div>Height: {Math.round(croppedAreaPixels.height)}px</div>
-                          <div>Aspect: {(croppedAreaPixels.width / croppedAreaPixels.height).toFixed(2)}</div>
+                          <div>Width: {Math.round(completedCrop.width)}px</div>
+                          <div>Height: {Math.round(completedCrop.height)}px</div>
+                          <div>Aspect: {(completedCrop.width / completedCrop.height).toFixed(2)}</div>
                         </div>
                       </div>
                     )}
@@ -333,9 +295,9 @@ export default function CropImage() {
                     <AlertTitle>Cropping Tips</AlertTitle>
                     <AlertDescription className="text-sm">
                       <ul className="mt-2 space-y-1">
-                        <li>• Drag to reposition the crop area</li>
-                        <li>• Use zoom for precise selection</li>
-                        <li>• Choose aspect ratios for consistency</li>
+                        <li>• Drag corners to resize proportionally</li>
+                        <li>• Drag sides to resize in one direction</li>
+                        <li>• Drag center to reposition</li>
                         <li>• Click "Crop Image" when ready</li>
                       </ul>
                     </AlertDescription>

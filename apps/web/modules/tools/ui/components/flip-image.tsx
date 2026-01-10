@@ -1,30 +1,22 @@
 "use client";
 
-import React from "react";
 import { toast } from "sonner";
 import Image from "next/image";
 import { useState, useCallback, useRef } from "react";
 import { Button } from "@workspace/ui/components/button";
-import { Label } from "@workspace/ui/components/label";
-import { Progress } from "@workspace/ui/components/progress";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { Alert, AlertTitle, AlertDescription } from "@workspace/ui/components/alert";
 import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
-import { Download, Loader2, ImageIcon, Trash2, FlipHorizontal, FlipVertical, RotateCcw, CheckCircle } from "lucide-react";
-
-interface FlippedImage {
-  blob: Blob;
-  url: string;
-  fileName: string;
-  flipType: "horizontal" | "vertical" | "both";
-}
+import { Download, ImageIcon, Trash2, FlipHorizontal, FlipVertical, RotateCcw, CheckCircle } from "lucide-react";
 
 export default function FlipImage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [flipType, setFlipType] = useState<"horizontal" | "vertical" | "both">("horizontal");
-  const [flippedImage, setFlippedImage] = useState<FlippedImage | null>(null);
+  const [currentFlip, setCurrentFlip] = useState<{ horizontal: boolean; vertical: boolean }>({
+    horizontal: false,
+    vertical: false,
+  });
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -41,11 +33,7 @@ export default function FlipImage() {
       URL.revokeObjectURL(imageSrc);
       setImageSrc(null);
     }
-    if (flippedImage) {
-      URL.revokeObjectURL(flippedImage.url);
-      setFlippedImage(null);
-    }
-  }, [imageSrc, flippedImage]);
+  }, [imageSrc]);
 
   const handleFileSelect = useCallback(
     (files: File[]) => {
@@ -62,7 +50,7 @@ export default function FlipImage() {
 
       cleanup();
       setSelectedFile(file);
-      setFlippedImage(null);
+      setCurrentFlip({ horizontal: false, vertical: false });
 
       const url = URL.createObjectURL(file);
       setImageSrc(url);
@@ -70,128 +58,112 @@ export default function FlipImage() {
     [cleanup],
   );
 
-  const flipImage = useCallback(async (imageSrc: string, flipType: "horizontal" | "vertical" | "both"): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
-      const image = new window.Image();
-      image.crossOrigin = "anonymous";
-      image.onload = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) {
-          reject(new Error("Canvas not available"));
-          return;
+  const handleFlip = useCallback(
+    async (type: "horizontal" | "vertical" | "both") => {
+      setIsProcessing(true);
+
+      try {
+        // Update the flip state immediately for visual feedback
+        if (type === "horizontal") {
+          setCurrentFlip((prev) => ({ ...prev, horizontal: !prev.horizontal }));
+          toast.success(currentFlip.horizontal ? "Horizontal flip removed" : "Flipped horizontally!");
+        } else if (type === "vertical") {
+          setCurrentFlip((prev) => ({ ...prev, vertical: !prev.vertical }));
+          toast.success(currentFlip.vertical ? "Vertical flip removed" : "Flipped vertically!");
+        } else {
+          setCurrentFlip((prev) => ({ horizontal: !prev.horizontal, vertical: !prev.vertical }));
+          toast.success("Flipped both directions!");
         }
+      } catch (error) {
+        console.error("Error flipping image:", error);
+        toast.error("Failed to flip image. Please try again.");
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    [currentFlip],
+  );
 
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          reject(new Error("Canvas context not available"));
-          return;
-        }
-
-        canvas.width = image.width;
-        canvas.height = image.height;
-
-        // Save the context state
-        ctx.save();
-
-        // Apply flip transformations
-        if (flipType === "horizontal" || flipType === "both") {
-          ctx.scale(-1, 1);
-          ctx.translate(-canvas.width, 0);
-        }
-        if (flipType === "vertical" || flipType === "both") {
-          ctx.scale(1, -1);
-          ctx.translate(0, -canvas.height);
-        }
-
-        // Draw the image
-        ctx.drawImage(image, 0, 0);
-
-        // Restore the context state
-        ctx.restore();
-
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              resolve(blob);
-            } else {
-              reject(new Error("Failed to create blob"));
-            }
-          },
-          "image/jpeg",
-          0.95,
-        );
-      };
-      image.onerror = () => reject(new Error("Failed to load image"));
-      image.src = imageSrc;
-    });
-  }, []);
-
-  const handleFlip = useCallback(async () => {
+  const downloadImage = useCallback(async () => {
     if (!imageSrc || !selectedFile) return;
 
-    setIsProcessing(true);
-
     try {
-      const flippedBlob = await flipImage(imageSrc, flipType);
-      const flippedUrl = URL.createObjectURL(flippedBlob);
+      const image = new window.Image();
+      image.crossOrigin = "anonymous";
 
-      const fileName = `${selectedFile.name.replace(/\.[^/.]+$/, "")}_flipped_${flipType}.jpg`;
-
-      setFlippedImage({
-        blob: flippedBlob,
-        url: flippedUrl,
-        fileName,
-        flipType,
+      await new Promise((resolve, reject) => {
+        image.onload = resolve;
+        image.onerror = reject;
+        image.src = imageSrc;
       });
 
-      toast.success(`Image flipped ${flipType === "both" ? "horizontally and vertically" : flipType}!`);
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      canvas.width = image.width;
+      canvas.height = image.height;
+
+      ctx.save();
+
+      // Apply flip transformations based on current state
+      if (currentFlip.horizontal && currentFlip.vertical) {
+        ctx.scale(-1, -1);
+        ctx.translate(-canvas.width, -canvas.height);
+      } else if (currentFlip.horizontal) {
+        ctx.scale(-1, 1);
+        ctx.translate(-canvas.width, 0);
+      } else if (currentFlip.vertical) {
+        ctx.scale(1, -1);
+        ctx.translate(0, -canvas.height);
+      }
+
+      ctx.drawImage(image, 0, 0);
+      ctx.restore();
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            const flipSuffix =
+              currentFlip.horizontal && currentFlip.vertical
+                ? "_flipped_both"
+                : currentFlip.horizontal
+                  ? "_flipped_horizontal"
+                  : currentFlip.vertical
+                    ? "_flipped_vertical"
+                    : "";
+            link.download = `${selectedFile.name.replace(/\.[^/.]+$/, "")}${flipSuffix}.jpg`;
+            link.href = url;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            toast.success("Image downloaded!");
+          }
+        },
+        "image/jpeg",
+        0.95,
+      );
     } catch (error) {
-      console.error("Error flipping image:", error);
-      toast.error("Failed to flip image. Please try again.");
-    } finally {
-      setIsProcessing(false);
+      console.error("Error downloading image:", error);
+      toast.error("Failed to download image.");
     }
-  }, [imageSrc, selectedFile, flipType, flipImage]);
-
-  const downloadFlippedImage = useCallback(() => {
-    if (!flippedImage) return;
-
-    const link = document.createElement("a");
-    link.href = flippedImage.url;
-    link.download = flippedImage.fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    toast.success("Image downloaded!");
-  }, [flippedImage]);
+  }, [imageSrc, selectedFile, currentFlip]);
 
   const resetFlip = useCallback(() => {
+    setCurrentFlip({ horizontal: false, vertical: false });
+    toast.success("Flips reset!");
+  }, []);
+
+  const resetAll = useCallback(() => {
     cleanup();
     setSelectedFile(null);
-    setFlipType("horizontal");
+    setCurrentFlip({ horizontal: false, vertical: false });
   }, [cleanup]);
-
-  const flipOptions = [
-    {
-      type: "horizontal" as const,
-      label: "Horizontal",
-      icon: FlipHorizontal,
-      description: "Flip left to right",
-    },
-    {
-      type: "vertical" as const,
-      label: "Vertical",
-      icon: FlipVertical,
-      description: "Flip top to bottom",
-    },
-    {
-      type: "both" as const,
-      label: "Both",
-      icon: RotateCcw,
-      description: "Flip both directions",
-    },
-  ];
 
   return (
     <div className="relative w-full overflow-hidden bg-background text-foreground">
@@ -212,9 +184,9 @@ export default function FlipImage() {
           </section>
         )}
 
-        {/* Main flipping interface with sidebar */}
-        {selectedFile && !flippedImage && (
-          <div className="max-w-7xl mx-auto">
+        {/* Main flipping interface */}
+        {selectedFile && (
+          <div className="max-w-7xl mx-auto my-10">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Main Image Area */}
               <div className="lg:col-span-2 space-y-6">
@@ -230,87 +202,99 @@ export default function FlipImage() {
                   <div className="relative h-96 lg:h-125 bg-muted rounded-lg overflow-hidden">
                     <Image
                       src={imageSrc}
-                      alt="Original"
+                      alt="Flipped preview"
                       fill
-                      className="object-contain"
+                      className="object-contain transition-transform duration-300"
                       sizes="(max-width: 1024px) 100vw, 66vw"
+                      style={{
+                        transform: `scale(${currentFlip.horizontal ? -1 : 1}, ${currentFlip.vertical ? -1 : 1})`,
+                      }}
                     />
                   </div>
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex gap-4 justify-center">
-                  <Button size="lg" onClick={handleFlip} disabled={isProcessing}>
-                    {isProcessing ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Flipping...
-                      </>
-                    ) : (
-                      <>
-                        {React.createElement(flipOptions.find((opt) => opt.type === flipType)?.icon || FlipHorizontal, {
-                          className: "w-4 h-4",
-                        })}
-                        Flip {flipType === "both" ? "Both Ways" : flipType.charAt(0).toUpperCase() + flipType.slice(1)}
-                      </>
-                    )}
+                <div className="flex flex-wrap gap-4 justify-center">
+                  <Button
+                    size="lg"
+                    variant="default"
+                    onClick={() => handleFlip("horizontal")}
+                    disabled={isProcessing}
+                    className={currentFlip.horizontal ? "bg-primary" : ""}
+                  >
+                    <FlipHorizontal className="w-4 h-4" />
+                    Flip Horizontal
                   </Button>
-                  <Button size="lg" variant="outline" onClick={resetFlip}>
-                    <Trash2 className="size-4" />
-                    Reset
+                  <Button
+                    size="lg"
+                    variant="default"
+                    onClick={() => handleFlip("vertical")}
+                    disabled={isProcessing}
+                    className={currentFlip.vertical ? "bg-primary" : ""}
+                  >
+                    <FlipVertical className="w-4 h-4" />
+                    Flip Vertical
+                  </Button>
+                  <Button size="lg" variant="default" onClick={() => handleFlip("both")} disabled={isProcessing}>
+                    <RotateCcw className="w-4 h-4" />
+                    Flip Both
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    onClick={resetFlip}
+                    disabled={!currentFlip.horizontal && !currentFlip.vertical}
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Reset Flips
                   </Button>
                 </div>
 
-                {/* Processing Progress */}
-                {isProcessing && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Processing image...</span>
-                    </div>
-                    <Progress value={100} className="w-full h-2" />
+                {/* Download Button */}
+                {(currentFlip.horizontal || currentFlip.vertical) && (
+                  <div className="flex justify-center">
+                    <Button size="lg" variant="default" onClick={downloadImage} className="gap-2">
+                      <Download className="w-4 h-4" />
+                      Download Flipped Image
+                    </Button>
                   </div>
                 )}
+
+                {/* Upload New Button */}
+                <div className="flex justify-center">
+                  <Button size="lg" variant="outline" onClick={resetAll} className="gap-2">
+                    <Trash2 className="w-4 h-4" />
+                    Upload New Image
+                  </Button>
+                </div>
               </div>
 
               {/* Sidebar Controls */}
               <div className="lg:col-span-1">
                 <div className="sticky top-8 space-y-6">
-                  {/* Flip Settings */}
-                  <div className="bg-card border rounded-lg p-6 space-y-6">
+                  {/* Flip Status */}
+                  <div className="bg-card border rounded-lg p-6 space-y-4">
                     <div className="flex items-center gap-2">
                       <FlipHorizontal className="w-5 h-5 text-primary" />
-                      <h3 className="text-lg font-semibold">Flip Settings</h3>
+                      <h3 className="text-lg font-semibold">Current Status</h3>
                     </div>
 
-                    {/* Flip Direction Selection */}
-                    <div className="space-y-3">
-                      <Label className="text-sm font-medium">Flip Direction</Label>
-                      <div className="space-y-2">
-                        {flipOptions.map((option) => {
-                          const Icon = option.icon;
-                          return (
-                            <Button
-                              key={option.type}
-                              variant={flipType === option.type ? "default" : "outline"}
-                              className="w-full justify-start gap-3 h-auto p-3"
-                              onClick={() => setFlipType(option.type)}
-                            >
-                              <Icon className="w-4 h-4 shrink-0" />
-                              <div className="text-left">
-                                <div className="font-medium">{option.label}</div>
-                                <div className="text-xs opacity-70">{option.description}</div>
-                              </div>
-                            </Button>
-                          );
-                        })}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between p-2 bg-muted rounded">
+                        <span className="text-sm">Horizontal</span>
+                        <span
+                          className={`text-sm font-medium ${currentFlip.horizontal ? "text-green-600" : "text-muted-foreground"}`}
+                        >
+                          {currentFlip.horizontal ? "Flipped" : "Normal"}
+                        </span>
                       </div>
-                    </div>
-
-                    {/* Preview Info */}
-                    <div className="space-y-2 p-3 bg-muted rounded-lg">
-                      <h4 className="text-sm font-medium">Selected Flip</h4>
-                      <div className="text-xs text-muted-foreground">
-                        {flipOptions.find((opt) => opt.type === flipType)?.description}
+                      <div className="flex items-center justify-between p-2 bg-muted rounded">
+                        <span className="text-sm">Vertical</span>
+                        <span
+                          className={`text-sm font-medium ${currentFlip.vertical ? "text-green-600" : "text-muted-foreground"}`}
+                        >
+                          {currentFlip.vertical ? "Flipped" : "Normal"}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -323,8 +307,8 @@ export default function FlipImage() {
                       <ul className="mt-2 space-y-1">
                         <li>• Horizontal flip mirrors left to right</li>
                         <li>• Vertical flip mirrors top to bottom</li>
-                        <li>• Both flips both directions</li>
-                        <li>• Original file remains unchanged</li>
+                        <li>• Combine both for 180° rotation</li>
+                        <li>• Download when you're satisfied</li>
                       </ul>
                     </AlertDescription>
                   </Alert>
@@ -332,70 +316,6 @@ export default function FlipImage() {
               </div>
             </div>
           </div>
-        )}
-
-        {/* Results - Always show when available */}
-        {flippedImage && (
-          <section className="max-w-4xl mx-auto my-8">
-            <div className="space-y-6">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600" />
-                <h2 className="text-xl font-semibold">Flipped Image</h2>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Original */}
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-muted-foreground">Original</h3>
-                  <div className="relative min-h-50 max-h-100 bg-muted rounded-lg overflow-hidden">
-                    <Image
-                      src={imageSrc || ""}
-                      alt="Original"
-                      fill
-                      className="object-contain"
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                    />
-                  </div>
-                </div>
-
-                {/* Flipped */}
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-muted-foreground">
-                    Flipped ({flippedImage.flipType.charAt(0).toUpperCase() + flippedImage.flipType.slice(1)})
-                  </h3>
-                  <div className="relative min-h-50 max-h-100 bg-muted rounded-lg overflow-hidden">
-                    <Image
-                      src={flippedImage.url}
-                      alt="Flipped"
-                      fill
-                      className="object-contain"
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-muted rounded-lg">
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <ImageIcon className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <span className="text-sm font-medium block truncate">{flippedImage.fileName}</span>
-                    <span className="text-sm text-muted-foreground">({formatFileSize(flippedImage.blob.size)})</span>
-                  </div>
-                </div>
-                <div className="flex gap-2 shrink-0">
-                  <Button onClick={downloadFlippedImage} className="gap-2">
-                    <Download className="size-4" />
-                    Download
-                  </Button>
-                  <Button variant="secondary" onClick={resetFlip} className="gap-2">
-                    <Trash2 className="size-4" />
-                    Reset
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </section>
         )}
 
         {/* Hidden Canvas for Processing */}

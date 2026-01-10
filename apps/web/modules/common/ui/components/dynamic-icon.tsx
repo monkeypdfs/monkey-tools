@@ -9,10 +9,21 @@ interface DynamicIconProps {
   fallback?: React.ReactNode;
 }
 
+// Convert PascalCase to kebab-case (e.g., FlipHorizontal -> flip-horizontal)
+const toKebabCase = (str: string): string => {
+  return str
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    .replace(/([A-Z])([A-Z][a-z])/g, "$1-$2")
+    .toLowerCase();
+};
+
 export const DynamicIcon = ({ name, className, style, fallback }: DynamicIconProps) => {
+  // Convert icon name to kebab-case if needed
+  const kebabName = toKebabCase(name) as IconName;
+
   // Check if the icon name is valid
-  if (!iconNames.includes(name)) {
-    console.warn(`[DynamicIcon] Invalid icon name: "${name}"`);
+  if (!iconNames.includes(kebabName)) {
+    console.warn(`[DynamicIcon] Invalid icon name: "${name}" (converted to "${kebabName}")`);
     return (
       fallback || (
         <div className={className} style={style}>
@@ -22,5 +33,5 @@ export const DynamicIcon = ({ name, className, style, fallback }: DynamicIconPro
     );
   }
 
-  return <Icon name={name} className={className} style={style} />;
+  return <Icon name={kebabName} className={className} style={style} />;
 };
