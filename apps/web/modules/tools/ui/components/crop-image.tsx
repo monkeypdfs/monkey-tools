@@ -10,6 +10,7 @@ import ReactCrop, { type Crop as CropType, type PixelCrop } from "react-image-cr
 import { Alert, AlertTitle, AlertDescription } from "@workspace/ui/components/alert";
 import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 import { Download, Loader2, ImageIcon, Trash2, Crop, CheckCircle } from "lucide-react";
+import "react-image-crop/dist/ReactCrop.css";
 
 interface CroppedImage {
   blob: Blob;
