@@ -30,23 +30,23 @@ export const ToolView = async ({ toolCategory, tool }: ToolViewProps) => {
     const { default: ToolComponent } = await import(`@/modules/tools/ui/components/${tool}`);
 
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container px-4 py-8 mx-auto">
         {/* Ad - Top */}
         <div className="mb-6">
           <AdPlaceholder position="top" />
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col gap-8 lg:flex-row">
           {/* Main Content */}
           <div className="flex-1">
             {/* Tool Header */}
             <div className="mb-8">
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{toolData.h1Heading || toolData.title}</h1>
+              <h1 className="mb-2 text-2xl font-bold md:text-3xl text-foreground">{toolData.h1Heading || toolData.title}</h1>
               {toolData.introText && <p className="text-muted-foreground">{toolData.introText}</p>}
             </div>
 
             {/* Tool Card */}
-            <div className="bg-card border border-border rounded-lg p-6 md:p-8 mb-8">
+            <div className="p-6 mb-8 border rounded-lg bg-card border-border md:p-8">
               <Suspense fallback={<ToolLoading />}>
                 <PDFLibProvider>
                   <ToolComponent />
@@ -65,7 +65,7 @@ export const ToolView = async ({ toolCategory, tool }: ToolViewProps) => {
             {/* SEO Content */}
             {toolData.richContent && (
               <div className="mb-8">
-                <div className="bg-card border border-border rounded-lg p-6">
+                <div className="p-6 border rounded-lg bg-card border-border">
                   <div
                     className="prose prose-lg dark:prose-invert max-w-none 
                       [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mt-6 [&_h2]:mb-4
@@ -95,7 +95,7 @@ export const ToolView = async ({ toolCategory, tool }: ToolViewProps) => {
             {/* Closing Text */}
             {toolData.closingText && (
               <div className="mb-8">
-                <div className="bg-card border border-border rounded-lg p-6">
+                <div className="p-6 border rounded-lg bg-card border-border">
                   <p className="text-base leading-relaxed text-muted-foreground">{toolData.closingText}</p>
                 </div>
               </div>
