@@ -1,30 +1,44 @@
 import Link from "next/link";
-import { cn } from "@workspace/ui/lib/utils";
-import type { Tool } from "@workspace/database";
-import type { IconName } from "lucide-react/dynamic";
-import { DynamicIcon } from "@/modules/common/ui/components/dynamic-icon";
+import { Button } from "@workspace/ui/components/button";
 
 interface ToolCardProps {
-  tool: Tool;
-  link: string;
-  categoryName: string;
+  name: string;
+  description: string;
+  category: string;
+  categorySlug: string;
+  toolSlug: string;
+  iconColor?: string;
+  bgColor?: string;
 }
 
-export const ToolCard = ({ tool, link, categoryName }: ToolCardProps) => {
-  return (
-    <Link href={link}>
-      <div className="flex flex-col items-start p-3 text-left transition-shadow duration-200 bg-white border shadow-sm cursor-pointer md:p-4 dark:bg-card rounded-xl hover:shadow-md border-border/50 group">
-        <div className="flex items-center gap-3 mb-4">
-          <div style={{ backgroundColor: tool.bgColor }} className={cn("p-3 rounded-xl")}>
-            <DynamicIcon name={tool.icon as IconName} style={{ color: tool.iconColor }} className={cn("w-6 h-6")} />
-          </div>
-          <div>
-            <h3 className="text-xs font-bold md:text-base text-foreground">{tool.title}</h3>
-            <span className="block text-xs font-medium text-red-500">{categoryName}</span>
-          </div>
-        </div>
+const categoryBorderColors: Record<string, string> = {
+  "pdf-tools": "border-[hsl(25_100%_55%)]",
+  "image-tools": "border-[hsl(120_100%_55%)]",
+  "text-tools": "border-[hsl(200_100%_55%)]",
+  "text-ai-tools": "border-[hsl(200_100%_55%)]",
+  converters: "border-[hsl(45_100%_55%)]",
+};
 
-        <p className="text-xs font-semibold leading-relaxed md:text-sm text-muted-foreground">{tool.description}</p>
+export const ToolCard = ({ name, description, category, categorySlug, toolSlug }: ToolCardProps) => {
+  const borderColor = categoryBorderColors[categorySlug] || "border-primary/30";
+
+  return (
+    <Link href={`/tools/${categorySlug}/${toolSlug}`} className="block">
+      <div
+        className={`bg-card border-2 ${borderColor} rounded-lg p-5 transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10`}
+      >
+        <div className="flex items-start justify-between mb-3">
+          <span className="text-xs font-medium tracking-wide uppercase text-muted-foreground">{category}</span>
+        </div>
+        <h3 className="mb-2 text-base font-semibold text-foreground">{name}</h3>
+        <p className="mb-4 text-sm text-muted-foreground line-clamp-1">{description}</p>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full border-primary text-primary hover:bg-primary! hover:text-primary-foreground! transition-colors"
+        >
+          Open tool
+        </Button>
       </div>
     </Link>
   );

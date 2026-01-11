@@ -9,7 +9,6 @@ import { Progress } from "@workspace/ui/components/progress";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { Download, Loader2, FileSpreadsheet, AlertTriangle } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@workspace/ui/components/alert";
-import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 
 interface UploadedFile {
   file: File;
@@ -194,133 +193,126 @@ export default function ExcelToPDF() {
   };
 
   return (
-    <div className="relative w-full overflow-hidden bg-background text-foreground">
-      <BackgroundElements />
+    <div className="w-full">
+      {/* Upload Section */}
+      <section aria-labelledby="upload-section" className="max-w-3xl mx-auto">
+        {files.length === 0 ? (
+          <FileUpload
+            mode="accumulate"
+            maxFiles={5}
+            onFilesSelected={handleFilesSelected}
+            acceptedFileTypes={["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.ms-excel"]}
+            label="Upload Excel Files"
+            description="Select Excel (.xlsx, .xls) files to convert to PDF"
+            disclaimer="Files are processed securely in your browser"
+          />
+        ) : (
+          <div className="space-y-6">
+            {/* Files Info */}
+            <div className="p-4 border rounded-xl bg-card">
+              <div className="flex items-center gap-3">
+                <FileSpreadsheet className="w-8 h-8 text-primary" />
+                <div className="flex-1">
+                  <h3 className="font-semibold">
+                    {files.length} file{files.length !== 1 ? "s" : ""} selected
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Total size: {formatFileSize(files.reduce((sum, f) => sum + f.file.size, 0))}
+                  </p>
+                </div>
+              </div>
+            </div>
 
-      <div className="container relative z-10 px-4 mx-auto">
-        {/* Upload Section */}
-        <section aria-labelledby="upload-section" className="max-w-3xl mx-auto">
-          {files.length === 0 ? (
-            <FileUpload
-              mode="accumulate"
-              maxFiles={5}
-              onFilesSelected={handleFilesSelected}
-              acceptedFileTypes={[
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "application/vnd.ms-excel",
-              ]}
-              label="Upload Excel Files"
-              description="Select Excel (.xlsx, .xls) files to convert to PDF"
-              disclaimer="Files are processed securely in your browser"
-            />
-          ) : (
-            <div className="space-y-6">
-              {/* Files Info */}
-              <div className="p-4 border rounded-xl bg-card/50 backdrop-blur-sm">
-                <div className="flex items-center gap-3">
-                  <FileSpreadsheet className="w-8 h-8 text-primary" />
-                  <div className="flex-1">
-                    <h3 className="font-semibold">
-                      {files.length} file{files.length !== 1 ? "s" : ""} selected
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      Total size: {formatFileSize(files.reduce((sum, f) => sum + f.file.size, 0))}
-                    </p>
+            {/* Convert Button */}
+            <div className="flex flex-row gap-4">
+              <Button
+                onClick={convertToPdf}
+                disabled={isConverting}
+                size="lg"
+                className="flex-1 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+              >
+                {isConverting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Converting...
+                  </>
+                ) : (
+                  <>
+                    <FileSpreadsheet className="w-4 h-4 mr-2" />
+                    Convert to PDF
+                  </>
+                )}
+              </Button>
+
+              <Button variant="outline" onClick={reset} size="lg" className="flex-1">
+                Reset
+              </Button>
+            </div>
+
+            {/* Conversion Result */}
+            {conversionResult && (
+              <div className="space-y-4">
+                <div className="p-6 border-2 border-green-300 shadow-lg rounded-xl bg-linear-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20 dark:border-green-700">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-green-500 rounded-full">
+                      <FileSpreadsheet className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-bold text-green-800 dark:text-green-200">Conversion Complete!</h4>
+                      <p className="text-sm text-green-700 dark:text-green-300">Your PDF is ready for download</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2">
+                    <div className="p-3 text-center rounded-lg bg-white/50 dark:bg-black/20">
+                      <p className="text-2xl font-bold text-green-600">{conversionResult.sheetCount}</p>
+                      <p className="text-sm text-muted-foreground">Sheets Converted</p>
+                    </div>
+                    <div className="p-3 text-center rounded-lg bg-white/50 dark:bg-black/20">
+                      <p className="text-2xl font-bold text-green-600">{formatFileSize(conversionResult.blob.size)}</p>
+                      <p className="text-sm text-muted-foreground">File Size</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Button
+                      onClick={downloadPdf}
+                      size="lg"
+                      className="flex-1 text-white transition-all bg-green-600 shadow-md hover:bg-green-700 hover:shadow-lg"
+                    >
+                      <Download className="w-5 h-5 mr-2" />
+                      Download PDF
+                    </Button>
+                    <Button variant="outline" onClick={reset} size="lg" className="flex-1">
+                      Reset
+                    </Button>
                   </div>
                 </div>
               </div>
-
-              {/* Convert Button */}
-              <div className="flex flex-row gap-4">
-                <Button
-                  onClick={convertToPdf}
-                  disabled={isConverting}
-                  size="lg"
-                  className="flex-1 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-                >
-                  {isConverting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Converting...
-                    </>
-                  ) : (
-                    <>
-                      <FileSpreadsheet className="w-4 h-4 mr-2" />
-                      Convert to PDF
-                    </>
-                  )}
-                </Button>
-
-                <Button variant="outline" onClick={reset} size="lg" className="flex-1">
-                  Reset
-                </Button>
-              </div>
-
-              {/* Conversion Result */}
-              {conversionResult && (
-                <div className="space-y-4">
-                  <div className="p-6 border-2 border-green-300 shadow-lg rounded-xl bg-linear-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20 dark:border-green-700">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-green-500 rounded-full">
-                        <FileSpreadsheet className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h4 className="text-lg font-bold text-green-800 dark:text-green-200">Conversion Complete!</h4>
-                        <p className="text-sm text-green-700 dark:text-green-300">Your PDF is ready for download</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2">
-                      <div className="p-3 text-center rounded-lg bg-white/50 dark:bg-black/20">
-                        <p className="text-2xl font-bold text-green-600">{conversionResult.sheetCount}</p>
-                        <p className="text-sm text-muted-foreground">Sheets Converted</p>
-                      </div>
-                      <div className="p-3 text-center rounded-lg bg-white/50 dark:bg-black/20">
-                        <p className="text-2xl font-bold text-green-600">{formatFileSize(conversionResult.blob.size)}</p>
-                        <p className="text-sm text-muted-foreground">File Size</p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                      <Button
-                        onClick={downloadPdf}
-                        size="lg"
-                        className="flex-1 text-white transition-all bg-green-600 shadow-md hover:bg-green-700 hover:shadow-lg"
-                      >
-                        <Download className="w-5 h-5 mr-2" />
-                        Download PDF
-                      </Button>
-                      <Button variant="outline" onClick={reset} size="lg" className="flex-1">
-                        Reset
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </section>
-
-        {/* Progress Bar */}
-        {isConverting && (
-          <div className="max-w-3xl mx-auto mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Converting spreadsheets to PDF...</span>
-              <span className="text-sm text-muted-foreground">{Math.round(conversionProgress)}%</span>
-            </div>
-            <Progress value={conversionProgress} className="w-full h-2" />
+            )}
           </div>
         )}
+      </section>
 
-        {/* Warning */}
-        <Alert className="max-w-3xl mx-auto mt-6 text-blue-800 border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800 dark:text-blue-200">
-          <AlertTriangle className="w-4 h-4 text-blue-600" />
-          <AlertTitle>Conversion Notice</AlertTitle>
-          <AlertDescription className="text-blue-700 dark:text-blue-300">
-            Excel sheets are converted to PDF in landscape orientation to fit more columns.
-          </AlertDescription>
-        </Alert>
-      </div>
+      {/* Progress Bar */}
+      {isConverting && (
+        <div className="max-w-3xl mx-auto mt-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">Converting spreadsheets to PDF...</span>
+            <span className="text-sm text-muted-foreground">{Math.round(conversionProgress)}%</span>
+          </div>
+          <Progress value={conversionProgress} className="w-full h-2" />
+        </div>
+      )}
+
+      {/* Warning */}
+      <Alert className="max-w-3xl mx-auto mt-6 text-blue-800 border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800 dark:text-blue-200">
+        <AlertTriangle className="w-4 h-4 text-blue-600" />
+        <AlertTitle>Conversion Notice</AlertTitle>
+        <AlertDescription className="text-blue-700 dark:text-blue-300">
+          Excel sheets are converted to PDF in landscape orientation to fit more columns.
+        </AlertDescription>
+      </Alert>
     </div>
   );
 }

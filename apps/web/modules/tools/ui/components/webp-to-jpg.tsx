@@ -6,7 +6,6 @@ import { Progress } from "@workspace/ui/components/progress";
 import { useState, useCallback, useEffect } from "react";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { Alert, AlertTitle, AlertDescription } from "@workspace/ui/components/alert";
-import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 import { Download, Loader2, ImageIcon, AlertTriangle, Trash2, Shuffle, CheckCircle } from "lucide-react";
 
 interface UploadedFile {
@@ -204,190 +203,186 @@ export default function WebpToJpg() {
   };
 
   return (
-    <div className="relative w-full overflow-hidden bg-background text-foreground">
-      <BackgroundElements />
+    <div className="w-full">
+      {/* Upload Section */}
+      <section aria-labelledby="upload-section" className="max-w-3xl mx-auto">
+        {files.length === 0 ? (
+          <FileUpload
+            mode="accumulate"
+            maxFiles={1}
+            onFilesSelected={handleFilesSelected}
+            acceptedFileTypes={["image/webp"]}
+            label="Upload WebP Image"
+            description="Select a WebP image to convert to JPG"
+            disclaimer="Images are processed securely and not stored on our servers"
+          />
+        ) : (
+          <div className="space-y-6">
+            {/* Files Info */}
+            <div className="p-4 border rounded-xl bg-card">
+              <div className="flex items-center gap-3">
+                <ImageIcon className="w-8 h-8 text-primary" />
+                <div className="flex-1">
+                  <h3 className="font-semibold">1 image selected</h3>
+                  <p className="text-sm text-muted-foreground">Size: {formatFileSize(files[0]?.file.size || 0)}</p>
+                </div>
+              </div>
+            </div>
 
-      <div className="container relative z-10 px-4 mx-auto">
-        {/* Upload Section */}
-        <section aria-labelledby="upload-section" className="max-w-3xl mx-auto">
-          {files.length === 0 ? (
-            <FileUpload
-              mode="accumulate"
-              maxFiles={1}
-              onFilesSelected={handleFilesSelected}
-              acceptedFileTypes={["image/webp"]}
-              label="Upload WebP Image"
-              description="Select a WebP image to convert to JPG"
-              disclaimer="Images are processed securely and not stored on our servers"
-            />
-          ) : (
-            <div className="space-y-6">
-              {/* Files Info */}
-              <div className="p-4 border rounded-xl bg-card/50 backdrop-blur-sm">
-                <div className="flex items-center gap-3">
-                  <ImageIcon className="w-8 h-8 text-primary" />
-                  <div className="flex-1">
-                    <h3 className="font-semibold">1 image selected</h3>
-                    <p className="text-sm text-muted-foreground">Size: {formatFileSize(files[0]?.file.size || 0)}</p>
+            {/* Image Preview */}
+            {convertedImages.length === 0 && (
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium text-foreground">Selected Image</h4>
+                <div className="flex justify-center">
+                  <div className="relative max-w-xs group">
+                    <div className="relative overflow-hidden border-2 rounded-lg aspect-square border-border bg-muted">
+                      {files[0]?.preview && (
+                        // biome-ignore lint/performance/noImgElement: <Required for image preview because nextjs Image cannot be used for object URLs>
+                        <img src={files[0].preview} alt="Selected" className="absolute inset-0 object-cover" />
+                      )}
+                    </div>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="absolute w-6 h-6 p-0 transition-opacity shadow-md opacity-0 -top-2 -right-2 group-hover:opacity-100 hover:scale-110"
+                      // biome-ignore lint/style/noNonNullAssertion: files[0] is guaranteed to exist here
+                      onClick={() => removeFile(files[0]!.id)}
+                      title="Remove image"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
                   </div>
                 </div>
               </div>
+            )}
 
-              {/* Image Preview */}
-              {convertedImages.length === 0 && (
-                <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-foreground">Selected Image</h4>
-                  <div className="flex justify-center">
-                    <div className="relative max-w-xs group">
-                      <div className="relative overflow-hidden border-2 rounded-lg aspect-square border-border bg-muted">
-                        {files[0]?.preview && (
-                          // biome-ignore lint/performance/noImgElement: <Required for image preview because nextjs Image cannot be used for object URLs>
-                          <img src={files[0].preview} alt="Selected" className="absolute inset-0 object-cover" />
-                        )}
-                      </div>
+            {/* Process Button */}
+            {convertedImages.length === 0 && (
+              <div className="flex flex-row gap-4">
+                <Button
+                  onClick={convertImages}
+                  disabled={isProcessing}
+                  size="lg"
+                  className="flex-1 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Converting...
+                    </>
+                  ) : (
+                    <>
+                      <Shuffle className="w-4 h-4 mr-2" />
+                      Convert to JPG
+                    </>
+                  )}
+                </Button>
+
+                <Button variant="outline" onClick={reset} size="lg" className="flex-1">
+                  Clear
+                </Button>
+              </div>
+            )}
+
+            {/* Processing Results */}
+            {convertedImages.length > 0 && (
+              <div className="space-y-6">
+                {/* Success Banner */}
+                <div className="p-4 border rounded-lg border-cyan-200 bg-cyan-50 dark:bg-cyan-950/20 dark:border-cyan-800">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="p-1 rounded-full bg-cyan-100 dark:bg-cyan-900/30">
+                      <CheckCircle className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                    </div>
+                    <h4 className="font-semibold text-cyan-800 dark:text-cyan-200">Image Converted Successfully!</h4>
+                  </div>
+                  <div className="flex flex-col gap-3 mt-2 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm text-cyan-700 dark:text-cyan-300">
+                      {(() => {
+                        // biome-ignore lint/style/noNonNullAssertion: convertedImages[0] is guaranteed to exist here
+                        const firstConverted = convertedImages[0]!;
+                        return firstConverted.sizeChange > 0
+                          ? `Increased by ${firstConverted.sizeChange.toFixed(1)}%`
+                          : `Reduced by ${Math.abs(firstConverted.sizeChange).toFixed(1)}%`;
+                      })()} ({formatFileSize(convertedImages[0]?.convertedBlob.size || 0)})
+                    </p>
+                    <div className="flex w-full gap-2 sm:w-auto">
                       <Button
-                        variant="destructive"
+                        variant="outline"
                         size="sm"
-                        className="absolute w-6 h-6 p-0 transition-opacity shadow-md opacity-0 -top-2 -right-2 group-hover:opacity-100 hover:scale-110"
-                        // biome-ignore lint/style/noNonNullAssertion: files[0] is guaranteed to exist here
-                        onClick={() => removeFile(files[0]!.id)}
-                        title="Remove image"
+                        onClick={reset}
+                        className="flex-1 text-cyan-800 border-cyan-200 sm:flex-none bg-white/50 hover:bg-white/80 dark:bg-black/20 dark:hover:bg-black/40 dark:border-cyan-800 dark:text-cyan-200"
                       >
-                        <Trash2 className="w-3 h-3" />
+                        Start Over
+                      </Button>
+                      <Button
+                        // biome-ignore lint/style/noNonNullAssertion: convertedImages[0] is guaranteed to exist here
+                        onClick={() => downloadImage(convertedImages[0]!)}
+                        size="sm"
+                        className="flex-1 text-white bg-cyan-600 sm:flex-none hover:bg-cyan-700"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download JPG
                       </Button>
                     </div>
                   </div>
                 </div>
-              )}
 
-              {/* Process Button */}
-              {convertedImages.length === 0 && (
-                <div className="flex flex-row gap-4">
-                  <Button
-                    onClick={convertImages}
-                    disabled={isProcessing}
-                    size="lg"
-                    className="flex-1 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Converting...
-                      </>
-                    ) : (
-                      <>
-                        <Shuffle className="w-4 h-4 mr-2" />
-                        Convert to JPG
-                      </>
-                    )}
-                  </Button>
-
-                  <Button variant="outline" onClick={reset} size="lg" className="flex-1">
-                    Clear
-                  </Button>
-                </div>
-              )}
-
-              {/* Processing Results */}
-              {convertedImages.length > 0 && (
-                <div className="space-y-6">
-                  {/* Success Banner */}
-                  <div className="p-4 border rounded-lg border-cyan-200 bg-cyan-50 dark:bg-cyan-950/20 dark:border-cyan-800">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="p-1 rounded-full bg-cyan-100 dark:bg-cyan-900/30">
-                        <CheckCircle className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-                      </div>
-                      <h4 className="font-semibold text-cyan-800 dark:text-cyan-200">Image Converted Successfully!</h4>
+                {/* Image Comparison */}
+                <div className="flex flex-col gap-6 md:grid md:grid-cols-2">
+                  {/* Original Image */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-muted-foreground">Original WebP</span>
+                      <span className="text-xs text-muted-foreground">{formatFileSize(files[0]?.file.size || 0)}</span>
                     </div>
-                    <div className="flex flex-col gap-3 mt-2 sm:flex-row sm:items-center sm:justify-between">
-                      <p className="text-sm text-cyan-700 dark:text-cyan-300">
-                        {(() => {
-                          // biome-ignore lint/style/noNonNullAssertion: convertedImages[0] is guaranteed to exist here
-                          const firstConverted = convertedImages[0]!;
-                          return firstConverted.sizeChange > 0
-                            ? `Increased by ${firstConverted.sizeChange.toFixed(1)}%`
-                            : `Reduced by ${Math.abs(firstConverted.sizeChange).toFixed(1)}%`;
-                        })()} ({formatFileSize(convertedImages[0]?.convertedBlob.size || 0)})
-                      </p>
-                      <div className="flex w-full gap-2 sm:w-auto">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={reset}
-                          className="flex-1 text-cyan-800 border-cyan-200 sm:flex-none bg-white/50 hover:bg-white/80 dark:bg-black/20 dark:hover:bg-black/40 dark:border-cyan-800 dark:text-cyan-200"
-                        >
-                          Start Over
-                        </Button>
-                        <Button
-                          // biome-ignore lint/style/noNonNullAssertion: convertedImages[0] is guaranteed to exist here
-                          onClick={() => downloadImage(convertedImages[0]!)}
-                          size="sm"
-                          className="flex-1 text-white bg-cyan-600 sm:flex-none hover:bg-cyan-700"
-                        >
-                          <Download className="w-4 h-4 mr-2" />
-                          Download JPG
-                        </Button>
-                      </div>
+                    <div className="relative overflow-hidden border rounded-xl aspect-square bg-secondary border-border">
+                      {files[0]?.preview && (
+                        // biome-ignore lint/performance/noImgElement: <Required for image preview because nextjs Image cannot be used for object URLs>
+                        <img src={files[0].preview} alt="Original" className="absolute inset-0 object-contain" />
+                      )}
                     </div>
                   </div>
 
-                  {/* Image Comparison */}
-                  <div className="flex flex-col gap-6 md:grid md:grid-cols-2">
-                    {/* Original Image */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-muted-foreground">Original WebP</span>
-                        <span className="text-xs text-muted-foreground">{formatFileSize(files[0]?.file.size || 0)}</span>
-                      </div>
-                      <div className="relative overflow-hidden border rounded-xl aspect-square bg-muted/50 border-border">
-                        {files[0]?.preview && (
-                          // biome-ignore lint/performance/noImgElement: <Required for image preview because nextjs Image cannot be used for object URLs>
-                          <img src={files[0].preview} alt="Original" className="absolute inset-0 object-contain" />
-                        )}
-                      </div>
+                  {/* Converted Image */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-cyan-600 dark:text-cyan-400">Converted JPG</span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatFileSize(convertedImages[0]?.convertedBlob.size || 0)}
+                      </span>
                     </div>
-
-                    {/* Converted Image */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-cyan-600 dark:text-cyan-400">Converted JPG</span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatFileSize(convertedImages[0]?.convertedBlob.size || 0)}
-                        </span>
-                      </div>
-                      <div className="relative overflow-hidden border border-cyan-200 rounded-xl aspect-square bg-muted/50 dark:border-cyan-900">
-                        {/* biome-ignore lint/performance/noImgElement: <Required for image preview because nextjs Image cannot be used for object URLs> */}
-                        <img src={convertedImages[0]?.convertedUrl} alt="Converted" className="absolute inset-0 object-contain" />
-                      </div>
+                    <div className="relative overflow-hidden border border-cyan-200 rounded-xl aspect-square bg-secondary dark:border-cyan-900">
+                      {/* biome-ignore lint/performance/noImgElement: <Required for image preview because nextjs Image cannot be used for object URLs> */}
+                      <img src={convertedImages[0]?.convertedUrl} alt="Converted" className="absolute inset-0 object-contain" />
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
-          )}
-        </section>
-
-        {/* Progress Bar */}
-        {isProcessing && (
-          <div className="max-w-3xl mx-auto mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Converting image...</span>
-              <span className="text-sm text-muted-foreground">{Math.round(processingProgress)}%</span>
-            </div>
-            <Progress value={processingProgress} className="w-full h-2" />
+              </div>
+            )}
           </div>
         )}
+      </section>
 
-        {/* Warning */}
-        <Alert className="max-w-3xl mx-auto mt-6 text-yellow-800 border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-800 dark:text-yellow-200">
-          <AlertTriangle className="w-4 h-4 text-yellow-600" />
-          <AlertTitle>Conversion Notice</AlertTitle>
-          <AlertDescription className="text-yellow-700 dark:text-yellow-300">
-            WebP to JPG conversion provides better compatibility. JPG format may have slightly different compression
-            characteristics.
-          </AlertDescription>
-        </Alert>
-      </div>
+      {/* Progress Bar */}
+      {isProcessing && (
+        <div className="max-w-3xl mx-auto mt-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">Converting image...</span>
+            <span className="text-sm text-muted-foreground">{Math.round(processingProgress)}%</span>
+          </div>
+          <Progress value={processingProgress} className="w-full h-2" />
+        </div>
+      )}
+
+      {/* Warning */}
+      <Alert className="max-w-3xl mx-auto mt-6 text-yellow-800 border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-800 dark:text-yellow-200">
+        <AlertTriangle className="w-4 h-4 text-yellow-600" />
+        <AlertTitle>Conversion Notice</AlertTitle>
+        <AlertDescription className="text-yellow-700 dark:text-yellow-300">
+          WebP to JPG conversion provides better compatibility. JPG format may have slightly different compression
+          characteristics.
+        </AlertDescription>
+      </Alert>
     </div>
   );
 }

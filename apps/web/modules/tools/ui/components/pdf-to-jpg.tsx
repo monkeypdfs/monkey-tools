@@ -8,7 +8,6 @@ import { Progress } from "@workspace/ui/components/progress";
 import { MAX_FILE_SIZE } from "@/modules/common/constants";
 import { Download, Loader2, ImageIcon, FileText } from "lucide-react";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
-import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 
 interface UploadedFile {
   file: File;
@@ -218,116 +217,112 @@ export default function PdfToJpg() {
   }, []);
 
   return (
-    <div className="relative w-full overflow-hidden bg-background text-foreground">
-      <BackgroundElements />
-
-      <div className="container relative z-10 px-4 mx-auto">
-        {/* Upload Section */}
-        <section aria-labelledby="upload-section" className="max-w-3xl mx-auto">
-          {!file ? (
-            <FileUpload
-              mode="append"
-              maxFiles={1}
-              onFilesSelected={handleFilesSelected}
-              acceptedFileTypes={["application/pdf"]}
-              label="Upload PDF to Convert"
-              description="Select a PDF file to convert its pages to JPG images"
-            />
-          ) : (
-            <div className="space-y-6">
-              {/* File Info */}
-              <div className="p-4 border rounded-xl bg-card/50 backdrop-blur-sm">
-                <div className="flex items-center gap-3">
-                  <FileText className="w-8 h-8 text-primary" />
-                  <div>
-                    <h3 className="font-semibold">{file.file.name}</h3>
-                    <p className="text-sm text-muted-foreground">{(file.file.size / 1024 / 1024).toFixed(2)} MB</p>
-                  </div>
+    <div className="w-full">
+      {/* Upload Section */}
+      <section aria-labelledby="upload-section" className="max-w-3xl mx-auto">
+        {!file ? (
+          <FileUpload
+            mode="append"
+            maxFiles={1}
+            onFilesSelected={handleFilesSelected}
+            acceptedFileTypes={["application/pdf"]}
+            label="Upload PDF to Convert"
+            description="Select a PDF file to convert its pages to JPG images"
+          />
+        ) : (
+          <div className="space-y-6">
+            {/* File Info */}
+            <div className="p-4 border rounded-xl bg-card">
+              <div className="flex items-center gap-3">
+                <FileText className="w-8 h-8 text-primary" />
+                <div>
+                  <h3 className="font-semibold">{file.file.name}</h3>
+                  <p className="text-sm text-muted-foreground">{(file.file.size / 1024 / 1024).toFixed(2)} MB</p>
                 </div>
               </div>
+            </div>
 
-              {/* Convert Button */}
-              <div className="flex flex-row gap-4">
-                <Button
-                  onClick={convertToJpg}
-                  disabled={isConverting}
-                  size="lg"
-                  className="flex-1 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-                >
-                  {isConverting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Converting...
-                    </>
-                  ) : (
-                    <>
-                      <ImageIcon className="w-4 h-4 mr-2" />
-                      Convert to JPG
-                    </>
-                  )}
-                </Button>
+            {/* Convert Button */}
+            <div className="flex flex-row gap-4">
+              <Button
+                onClick={convertToJpg}
+                disabled={isConverting}
+                size="lg"
+                className="flex-1 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+              >
+                {isConverting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Converting...
+                  </>
+                ) : (
+                  <>
+                    <ImageIcon className="w-4 h-4 mr-2" />
+                    Convert to JPG
+                  </>
+                )}
+              </Button>
 
-                <Button variant="outline" onClick={reset} size="lg" className="flex-1">
-                  Reset
-                </Button>
-              </div>
+              <Button variant="outline" onClick={reset} size="lg" className="flex-1">
+                Reset
+              </Button>
+            </div>
 
-              {/* Converted Images */}
-              {convertedImages.length > 0 && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-base font-semibold md:text-lg">
-                      Converted Images ({convertedImages.length} page{convertedImages.length > 1 ? "s" : ""})
-                    </h4>
-                    <Button onClick={downloadAllImages} size="lg" className="text-white bg-green-600 hover:bg-green-700">
-                      <Download className="mr-2 size-4" />
-                      Download ZIP
-                    </Button>
-                  </div>
+            {/* Converted Images */}
+            {convertedImages.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-base font-semibold md:text-lg">
+                    Converted Images ({convertedImages.length} page{convertedImages.length > 1 ? "s" : ""})
+                  </h4>
+                  <Button onClick={downloadAllImages} size="lg" className="text-white bg-green-600 hover:bg-green-700">
+                    <Download className="mr-2 size-4" />
+                    Download ZIP
+                  </Button>
+                </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {convertedImages.map((image) => (
-                      <div key={image.pageNumber} className="p-4 border rounded-lg bg-card/50">
-                        <div
-                          className="mb-3 overflow-hidden rounded-md aspect-video bg-muted"
-                          role="img"
-                          aria-label={`Page ${image.pageNumber}`}
-                          style={{
-                            backgroundImage: `url(${URL.createObjectURL(image.blob)})`,
-                            backgroundPosition: "center",
-                            backgroundRepeat: "no-repeat",
-                            backgroundSize: "contain",
-                          }}
-                        />
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">Page {image.pageNumber}</span>
-                          <Button onClick={() => downloadImage(image)} size="sm" variant="outline">
-                            <Download className="w-4 h-4 mr-1" />
-                            JPG
-                          </Button>
-                        </div>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {convertedImages.map((image) => (
+                    <div key={image.pageNumber} className="p-4 border rounded-lg bg-card/50">
+                      <div
+                        className="mb-3 overflow-hidden rounded-md aspect-video bg-muted"
+                        role="img"
+                        aria-label={`Page ${image.pageNumber}`}
+                        style={{
+                          backgroundImage: `url(${URL.createObjectURL(image.blob)})`,
+                          backgroundPosition: "center",
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: "contain",
+                        }}
+                      />
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Page {image.pageNumber}</span>
+                        <Button onClick={() => downloadImage(image)} size="sm" variant="outline">
+                          <Download className="w-4 h-4 mr-1" />
+                          JPG
+                        </Button>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
-              )}
-            </div>
-          )}
-        </section>
-
-        {/* Progress Bar */}
-        {isConverting && (
-          <div className="max-w-3xl mx-auto mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">
-                Converting PDF to JPG... {currentPage > 0 && totalPages > 0 ? `(${currentPage}/${totalPages})` : ""}
-              </span>
-              <span className="text-sm text-muted-foreground">{Math.round(convertProgress)}%</span>
-            </div>
-            <Progress value={convertProgress} className="w-full h-2" />
+              </div>
+            )}
           </div>
         )}
-      </div>
+      </section>
+
+      {/* Progress Bar */}
+      {isConverting && (
+        <div className="max-w-3xl mx-auto mt-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">
+              Converting PDF to JPG... {currentPage > 0 && totalPages > 0 ? `(${currentPage}/${totalPages})` : ""}
+            </span>
+            <span className="text-sm text-muted-foreground">{Math.round(convertProgress)}%</span>
+          </div>
+          <Progress value={convertProgress} className="w-full h-2" />
+        </div>
+      )}
     </div>
   );
 }

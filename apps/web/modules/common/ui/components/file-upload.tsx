@@ -178,7 +178,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   };
 
   return (
-    <div className={cn("w-full space-y-4 my-20", className)}>
+    <div className={cn("w-full space-y-4 my-1", className)}>
       {/* Upload Area */}
       <div className="space-y-2">
         <label
@@ -187,7 +187,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             "relative block border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl",
             isDragOver
               ? "border-primary bg-primary/10 dark:bg-primary/20 scale-105 shadow-primary/20"
-              : "border-primary/30 bg-linear-to-br from-primary/5 via-background to-primary/5 dark:from-primary/10 dark:via-background dark:to-primary/10 hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-primary/15",
+              : "border-primary/30 bg-card hover:border-primary",
             disabled && "opacity-50 cursor-not-allowed shadow-none",
             error && "border-destructive bg-destructive/5 dark:bg-destructive/10 shadow-destructive/20",
           )}
@@ -212,7 +212,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                 "relative p-6 rounded-2xl transition-all duration-300 shadow-lg",
                 isDragOver
                   ? "bg-primary text-primary-foreground scale-110 shadow-primary/30"
-                  : "bg-linear-to-br from-primary/10 to-primary/20 text-primary shadow-primary/10 hover:shadow-primary/20 hover:scale-105",
+                  : "bg-primary/10 text-primary shadow-primary/10 hover:shadow-primary/20 hover:scale-105",
               )}
             >
               <Upload className="w-10 h-10" />
@@ -246,7 +246,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
       {/* Disclaimer */}
       {disclaimer && (
-        <div className="my-10 text-center">
+        <div className="mt-2 text-center">
           <p className="text-sm italic text-muted-foreground/70">{disclaimer}</p>
         </div>
       )}

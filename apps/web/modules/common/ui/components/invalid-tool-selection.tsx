@@ -4,18 +4,14 @@ import type { IconName } from "lucide-react/dynamic";
 import { Button } from "@workspace/ui/components/button";
 import { DynamicIcon } from "@/modules/common/ui/components/dynamic-icon";
 import { AlertTriangle, HomeIcon, SearchIcon } from "lucide-react";
-import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 
 export const InvalidToolSelection = () => {
   // Get first 3 tools as popular recommendations
   const popularTools = TOOLS.slice(0, 3);
 
   return (
-    <section className="relative w-full overflow-hidden bg-background text-foreground">
-      {/* Background Elements */}
-      <BackgroundElements />
-
-      <div className="container relative z-10 px-4 mx-auto">
+    <section className="relative w-full bg-background text-foreground py-12">
+      <div className="container px-4 mx-auto">
         {/* Header */}
         <div className="max-w-4xl mx-auto mb-12 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium text-orange-600 bg-orange-100 rounded-full dark:bg-orange-900/20 dark:text-orange-400">

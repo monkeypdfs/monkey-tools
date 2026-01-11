@@ -9,7 +9,6 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { Alert, AlertTitle, AlertDescription } from "@workspace/ui/components/alert";
 import { Download, Loader2, ImageIcon, AlertTriangle, Trash2 } from "lucide-react";
-import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 
 interface UploadedFile {
   file: File;
@@ -224,174 +223,170 @@ export default function JPGToPDF() {
   };
 
   return (
-    <div className="relative w-full overflow-hidden bg-background text-foreground">
-      <BackgroundElements />
+    <div className="w-full">
+      {/* Upload Section */}
+      <section aria-labelledby="upload-section" className="max-w-3xl mx-auto">
+        {files.length === 0 ? (
+          <FileUpload
+            mode="accumulate"
+            maxFiles={20}
+            onFilesSelected={handleFilesSelected}
+            acceptedFileTypes={["image/jpeg", "image/jpg"]}
+            label="Upload JPG Images"
+            description="Select multiple JPG images to convert to PDF"
+            disclaimer="Images are processed securely and not stored on our servers"
+          />
+        ) : (
+          <div className="space-y-6">
+            {/* Files Info */}
+            <div className="p-4 border rounded-xl bg-card">
+              <div className="flex items-center gap-3">
+                <ImageIcon className="w-8 h-8 text-primary" />
+                <div className="flex-1">
+                  <h3 className="font-semibold">
+                    {files.length} image{files.length !== 1 ? "s" : ""} selected
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Total size: {formatFileSize(files.reduce((sum, f) => sum + f.file.size, 0))}
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" onClick={addMoreFiles}>
+                  Add More
+                </Button>
+              </div>
+            </div>
 
-      <div className="container relative z-10 px-4 mx-auto">
-        {/* Upload Section */}
-        <section aria-labelledby="upload-section" className="max-w-3xl mx-auto">
-          {files.length === 0 ? (
-            <FileUpload
-              mode="accumulate"
-              maxFiles={20}
-              onFilesSelected={handleFilesSelected}
-              acceptedFileTypes={["image/jpeg", "image/jpg"]}
-              label="Upload JPG Images"
-              description="Select multiple JPG images to convert to PDF"
-              disclaimer="Images are processed securely and not stored on our servers"
+            {/* Hidden file input for adding more files */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/jpeg,image/jpg"
+              onChange={handleAdditionalFiles}
+              className="hidden"
             />
-          ) : (
-            <div className="space-y-6">
-              {/* Files Info */}
-              <div className="p-4 border rounded-xl bg-card/50 backdrop-blur-sm">
-                <div className="flex items-center gap-3">
-                  <ImageIcon className="w-8 h-8 text-primary" />
-                  <div className="flex-1">
-                    <h3 className="font-semibold">
-                      {files.length} image{files.length !== 1 ? "s" : ""} selected
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      Total size: {formatFileSize(files.reduce((sum, f) => sum + f.file.size, 0))}
-                    </p>
+
+            {/* Image Previews */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium text-foreground">Selected Images</h4>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                {files.map((file, index) => (
+                  <div key={file.id} className="relative group">
+                    <div className="relative overflow-hidden border-2 rounded-lg aspect-square border-border bg-muted">
+                      {file.preview && (
+                        <NextImage src={file.preview} alt={`Preview ${index + 1}`} fill className="object-cover" />
+                      )}
+                    </div>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="absolute w-6 h-6 p-0 transition-opacity shadow-md opacity-0 -top-2 -right-2 group-hover:opacity-100 hover:scale-110"
+                      onClick={() => removeFile(file.id)}
+                      title="Remove image"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                    <div className="absolute px-2 py-1 text-xs text-white rounded bottom-1 left-1 bg-black/70">{index + 1}</div>
                   </div>
-                  <Button variant="outline" size="sm" onClick={addMoreFiles}>
-                    Add More
-                  </Button>
-                </div>
+                ))}
               </div>
+              <p className="text-xs text-muted-foreground">Images will be converted to PDF pages in the order shown above</p>
+            </div>
 
-              {/* Hidden file input for adding more files */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept="image/jpeg,image/jpg"
-                onChange={handleAdditionalFiles}
-                className="hidden"
-              />
+            {/* Convert Button */}
+            <div className="flex flex-row gap-4">
+              <Button
+                onClick={convertToPdf}
+                disabled={isConverting}
+                size="lg"
+                className="flex-1 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+              >
+                {isConverting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Converting...
+                  </>
+                ) : (
+                  <>
+                    <ImageIcon className="w-4 h-4 mr-2" />
+                    Convert to PDF
+                  </>
+                )}
+              </Button>
 
-              {/* Image Previews */}
-              <div className="space-y-3">
-                <h4 className="text-sm font-medium text-foreground">Selected Images</h4>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                  {files.map((file, index) => (
-                    <div key={file.id} className="relative group">
-                      <div className="relative overflow-hidden border-2 rounded-lg aspect-square border-border bg-muted">
-                        {file.preview && (
-                          <NextImage src={file.preview} alt={`Preview ${index + 1}`} fill className="object-cover" />
-                        )}
-                      </div>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="absolute w-6 h-6 p-0 transition-opacity shadow-md opacity-0 -top-2 -right-2 group-hover:opacity-100 hover:scale-110"
-                        onClick={() => removeFile(file.id)}
-                        title="Remove image"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                      <div className="absolute px-2 py-1 text-xs text-white rounded bottom-1 left-1 bg-black/70">{index + 1}</div>
+              <Button variant="outline" onClick={reset} size="lg" className="flex-1">
+                Reset
+              </Button>
+            </div>
+
+            {/* Conversion Result */}
+            {conversionResult && (
+              <div className="space-y-4">
+                <div className="p-6 border-2 border-green-300 shadow-lg rounded-xl bg-linear-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20 dark:border-green-700">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-green-500 rounded-full">
+                      <ImageIcon className="w-6 h-6 text-white" />
                     </div>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">Images will be converted to PDF pages in the order shown above</p>
-              </div>
-
-              {/* Convert Button */}
-              <div className="flex flex-row gap-4">
-                <Button
-                  onClick={convertToPdf}
-                  disabled={isConverting}
-                  size="lg"
-                  className="flex-1 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-                >
-                  {isConverting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Converting...
-                    </>
-                  ) : (
-                    <>
-                      <ImageIcon className="w-4 h-4 mr-2" />
-                      Convert to PDF
-                    </>
-                  )}
-                </Button>
-
-                <Button variant="outline" onClick={reset} size="lg" className="flex-1">
-                  Reset
-                </Button>
-              </div>
-
-              {/* Conversion Result */}
-              {conversionResult && (
-                <div className="space-y-4">
-                  <div className="p-6 border-2 border-green-300 shadow-lg rounded-xl bg-linear-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20 dark:border-green-700">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-green-500 rounded-full">
-                        <ImageIcon className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h4 className="text-lg font-bold text-green-800 dark:text-green-200">Conversion Complete!</h4>
-                        <p className="text-sm text-green-700 dark:text-green-300">Your PDF is ready for download</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-3">
-                      <div className="p-3 text-center rounded-lg bg-white/50 dark:bg-black/20">
-                        <p className="text-2xl font-bold text-green-600">{conversionResult.imageCount}</p>
-                        <p className="text-sm text-muted-foreground">Images Converted</p>
-                      </div>
-                      <div className="p-3 text-center rounded-lg bg-white/50 dark:bg-black/20">
-                        <p className="text-2xl font-bold text-green-600">{conversionResult.imageCount}</p>
-                        <p className="text-sm text-muted-foreground">PDF Pages</p>
-                      </div>
-                      <div className="p-3 text-center rounded-lg bg-white/50 dark:bg-black/20">
-                        <p className="text-2xl font-bold text-green-600">{formatFileSize(conversionResult.blob.size)}</p>
-                        <p className="text-sm text-muted-foreground">File Size</p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                      <Button
-                        onClick={downloadPdf}
-                        size="lg"
-                        className="flex-1 text-white transition-all bg-green-600 shadow-md hover:bg-green-700 hover:shadow-lg"
-                      >
-                        <Download className="w-5 h-5 mr-2" />
-                        Download PDF
-                      </Button>
-                      <Button variant="outline" onClick={reset} size="lg" className="flex-1">
-                        Reset
-                      </Button>
+                    <div>
+                      <h4 className="text-lg font-bold text-green-800 dark:text-green-200">Conversion Complete!</h4>
+                      <p className="text-sm text-green-700 dark:text-green-300">Your PDF is ready for download</p>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          )}
-        </section>
 
-        {/* Progress Bar */}
-        {isConverting && (
-          <div className="max-w-3xl mx-auto mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Converting images to PDF...</span>
-              <span className="text-sm text-muted-foreground">{Math.round(conversionProgress)}%</span>
-            </div>
-            <Progress value={conversionProgress} className="w-full h-2" />
+                  <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-3">
+                    <div className="p-3 text-center rounded-lg bg-white/50 dark:bg-black/20">
+                      <p className="text-2xl font-bold text-green-600">{conversionResult.imageCount}</p>
+                      <p className="text-sm text-muted-foreground">Images Converted</p>
+                    </div>
+                    <div className="p-3 text-center rounded-lg bg-white/50 dark:bg-black/20">
+                      <p className="text-2xl font-bold text-green-600">{conversionResult.imageCount}</p>
+                      <p className="text-sm text-muted-foreground">PDF Pages</p>
+                    </div>
+                    <div className="p-3 text-center rounded-lg bg-white/50 dark:bg-black/20">
+                      <p className="text-2xl font-bold text-green-600">{formatFileSize(conversionResult.blob.size)}</p>
+                      <p className="text-sm text-muted-foreground">File Size</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Button
+                      onClick={downloadPdf}
+                      size="lg"
+                      className="flex-1 text-white transition-all bg-green-600 shadow-md hover:bg-green-700 hover:shadow-lg"
+                    >
+                      <Download className="w-5 h-5 mr-2" />
+                      Download PDF
+                    </Button>
+                    <Button variant="outline" onClick={reset} size="lg" className="flex-1">
+                      Reset
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
+      </section>
 
-        {/* Warning */}
-        <Alert className="max-w-3xl mx-auto mt-6 text-yellow-800 border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-800 dark:text-yellow-200">
-          <AlertTriangle className="w-4 h-4 text-yellow-600" />
-          <AlertTitle>Conversion Notice</AlertTitle>
-          <AlertDescription className="text-yellow-700 dark:text-yellow-300">
-            Images are converted in the order they were uploaded. Make sure to upload them in the desired sequence.
-          </AlertDescription>
-        </Alert>
-      </div>
+      {/* Progress Bar */}
+      {isConverting && (
+        <div className="max-w-3xl mx-auto mt-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">Converting images to PDF...</span>
+            <span className="text-sm text-muted-foreground">{Math.round(conversionProgress)}%</span>
+          </div>
+          <Progress value={conversionProgress} className="w-full h-2" />
+        </div>
+      )}
+
+      {/* Warning */}
+      <Alert className="max-w-3xl mx-auto mt-6 text-yellow-800 border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-800 dark:text-yellow-200">
+        <AlertTriangle className="w-4 h-4 text-yellow-600" />
+        <AlertTitle>Conversion Notice</AlertTitle>
+        <AlertDescription className="text-yellow-700 dark:text-yellow-300">
+          Images are converted in the order they were uploaded. Make sure to upload them in the desired sequence.
+        </AlertDescription>
+      </Alert>
     </div>
   );
 }

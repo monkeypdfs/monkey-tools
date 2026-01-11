@@ -9,7 +9,6 @@ import { MAX_FILE_SIZE } from "@/modules/common/constants";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { usePdfManager } from "@/modules/common/hooks/use-pdf-manager";
 import { Download, Plus, Loader2, RotateCw, RotateCcw } from "lucide-react";
-import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 import { SelectablePDFGrid } from "@/modules/common/ui/components/selectable-pdf-grid";
 
 export default function RotatePDF() {
@@ -153,121 +152,112 @@ export default function RotatePDF() {
   }, [resetManager]);
 
   return (
-    <div className="relative w-full overflow-hidden bg-background text-foreground">
-      <BackgroundElements />
+    <div className="w-full">
+      {/* Upload Section */}
+      <section aria-labelledby="upload-section" className="max-w-5xl mx-auto">
+        {pages.length === 0 && !isProcessing ? (
+          <FileUpload mode="append" maxFiles={5} onFilesSelected={handleFilesSelected} acceptedFileTypes={["application/pdf"]} />
+        ) : (
+          <div className="flex flex-col gap-6">
+            {/* Toolbar */}
+            <div className="flex flex-wrap items-center justify-between gap-4 p-4 border rounded-xl bg-card">
+              <div className="flex items-center gap-3">
+                <h3 className="text-lg font-semibold">
+                  {pages.length} Page{pages.length !== 1 ? "s" : ""}
+                </h3>
 
-      <div className="container relative z-10 px-4 mx-auto">
-        {/* Upload Section */}
-        <section aria-labelledby="upload-section" className="max-w-5xl mx-auto">
-          {pages.length === 0 && !isProcessing ? (
-            <FileUpload
-              mode="append"
-              maxFiles={5}
-              onFilesSelected={handleFilesSelected}
-              acceptedFileTypes={["application/pdf"]}
-            />
-          ) : (
-            <div className="flex flex-col gap-6">
-              {/* Toolbar */}
-              <div className="flex flex-wrap items-center justify-between gap-4 p-4 border rounded-xl bg-card/50 backdrop-blur-sm">
-                <div className="flex items-center gap-3">
-                  <h3 className="text-lg font-semibold">
-                    {pages.length} Page{pages.length !== 1 ? "s" : ""}
-                  </h3>
-
-                  {isProcessing && (
-                    <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Processing...
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {selectedPages.size > 0 && (
-                    <>
-                      <Button variant="outline" size="sm" onClick={() => handleRotateSelected("ccw")} title="Rotate Left">
-                        <RotateCcw className="w-4 h-4" />
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleRotateSelected("cw")} title="Rotate Right">
-                        <RotateCw className="w-4 h-4" />
-                      </Button>
-                      <div className="w-px h-6 mx-1 bg-border" />
-                    </>
-                  )}
-
-                  <div className="relative cursor-pointer">
-                    <input
-                      type="file"
-                      multiple
-                      accept="application/pdf"
-                      onChange={handleAddMore}
-                      className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
-                      title="Add more files"
-                    />
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Plus className="w-4 h-4" />
-                      Add Files
-                    </Button>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={reset}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    Clear All
-                  </Button>
-                </div>
+                {isProcessing && (
+                  <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </span>
+                )}
               </div>
 
-              {/* Pages Grid with Selection */}
-              <SelectablePDFGrid
-                pages={pages}
-                selectedPages={selectedPages}
-                onSelectPage={handleSelectPage}
-                onSelectAll={handleSelectAll}
-                onRotate={(id) => rotatePage(id, "cw")}
-                onRemove={handleRemovePage}
-              />
-            </div>
-          )}
-        </section>
+              <div className="flex items-center gap-2">
+                {selectedPages.size > 0 && (
+                  <>
+                    <Button variant="outline" size="sm" onClick={() => handleRotateSelected("ccw")} title="Rotate Left">
+                      <RotateCcw className="w-4 h-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleRotateSelected("cw")} title="Rotate Right">
+                      <RotateCw className="w-4 h-4" />
+                    </Button>
+                    <div className="w-px h-6 mx-1 bg-border" />
+                  </>
+                )}
 
-        {/* Progress Bar */}
-        {isSaving && (
-          <div className="max-w-3xl mx-auto mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Saving PDF...</span>
-              <span className="text-sm text-muted-foreground">{Math.round(saveProgress)}%</span>
+                <div className="relative cursor-pointer">
+                  <input
+                    type="file"
+                    multiple
+                    accept="application/pdf"
+                    onChange={handleAddMore}
+                    className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
+                    title="Add more files"
+                  />
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Add Files
+                  </Button>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={reset}
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                >
+                  Clear All
+                </Button>
+              </div>
             </div>
-            <Progress value={saveProgress} className="w-full h-2" />
+
+            {/* Pages Grid with Selection */}
+            <SelectablePDFGrid
+              pages={pages}
+              selectedPages={selectedPages}
+              onSelectPage={handleSelectPage}
+              onSelectAll={handleSelectAll}
+              onRotate={(id) => rotatePage(id, "cw")}
+              onRemove={handleRemovePage}
+            />
           </div>
         )}
+      </section>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col justify-center gap-4 mt-8 sm:flex-row">
-          <Button
-            onClick={savePDF}
-            disabled={pages.length === 0 || isSaving || isProcessing}
-            size="lg"
-            className="min-w-40 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-          >
-            {isSaving ? "Saving..." : "Save PDF"}
-          </Button>
-
-          {rotatedPdf && (
-            <Button
-              onClick={downloadPDF}
-              variant="outline"
-              size="lg"
-              className="text-blue-700 border-blue-200 min-w-40 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/40"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Download PDF
-            </Button>
-          )}
+      {/* Progress Bar */}
+      {isSaving && (
+        <div className="max-w-3xl mx-auto mt-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">Saving PDF...</span>
+            <span className="text-sm text-muted-foreground">{Math.round(saveProgress)}%</span>
+          </div>
+          <Progress value={saveProgress} className="w-full h-2" />
         </div>
+      )}
+
+      {/* Action Buttons */}
+      <div className="flex flex-col justify-center gap-4 mt-8 sm:flex-row">
+        <Button
+          onClick={savePDF}
+          disabled={pages.length === 0 || isSaving || isProcessing}
+          size="lg"
+          className="min-w-40 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+        >
+          {isSaving ? "Saving..." : "Save PDF"}
+        </Button>
+
+        {rotatedPdf && (
+          <Button
+            onClick={downloadPDF}
+            variant="outline"
+            size="lg"
+            className="text-blue-700 border-blue-200 min-w-40 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/40"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download PDF
+          </Button>
+        )}
       </div>
     </div>
   );

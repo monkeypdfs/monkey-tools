@@ -1,8 +1,6 @@
 "use client";
 
 import { ToolCard } from "@/modules/common/ui/components/tool-card";
-import { SearchBar } from "@/modules/common/ui/components/search-bar";
-import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 import { useSuspenseCategoryBySlug } from "@/modules/dashboard/hooks/use-suspense-categories";
 
 interface ToolsViewProps {
@@ -13,21 +11,24 @@ export const ToolsView = ({ toolCategory }: ToolsViewProps) => {
   const { data: category } = useSuspenseCategoryBySlug(toolCategory);
 
   return (
-    <div className="mt-10 relative w-full overflow-hidden bg-background text-foreground">
-      {/* Background Elements */}
-      <BackgroundElements />
+    <div className="container mx-auto px-4 py-12">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">{category.name}</h1>
+        <p className="text-muted-foreground max-w-2xl mx-auto">{category.description}</p>
+      </div>
 
-      <div className="container relative z-10 px-4 mx-auto">
-        <h1 className="text-5xl font-bold text-center">{category.name}</h1>
-        <p className="my-6 text-base text-center">{category.description}</p>
-        <SearchBar />
-
-        {/* Tools Grid */}
-        <div className="grid grid-cols-2 gap-2 my-12 md:gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {category.tools.map((tool) => (
-            <ToolCard key={tool.title} tool={tool} link={`/tools/${category.slug}/${tool.link}`} categoryName={category.name} />
-          ))}
-        </div>
+      {/* Tools Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {category.tools.map((tool) => (
+          <ToolCard
+            key={tool.title}
+            name={tool.title}
+            description={tool.description}
+            category={category.name}
+            categorySlug={category.slug}
+            toolSlug={tool.link}
+          />
+        ))}
       </div>
     </div>
   );

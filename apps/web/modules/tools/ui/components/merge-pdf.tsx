@@ -11,7 +11,6 @@ import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { usePdfManager } from "@/modules/common/hooks/use-pdf-manager";
 import type { UploadedFile } from "@/modules/common/hooks/use-pdf-manager";
 import { Download, Trash2, Plus, Loader2, ArrowUp, ArrowDown } from "lucide-react";
-import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 import { type PDFPage, SortablePDFGrid } from "@/modules/common/ui/components/sortable-pdf-grid";
 
 export default function MergePDF() {
@@ -163,190 +162,181 @@ export default function MergePDF() {
   }, [resetManager]);
 
   return (
-    <div className="relative w-full overflow-hidden bg-background text-foreground">
-      <BackgroundElements />
-
-      <div className="container relative z-10 px-4 mx-auto">
-        {/* Upload Section */}
-        <section aria-labelledby="upload-section" className="max-w-5xl mx-auto">
-          {pages.length === 0 && !isProcessing ? (
-            <FileUpload
-              mode="append"
-              maxFiles={5}
-              onFilesSelected={handleFilesSelected}
-              acceptedFileTypes={["application/pdf"]}
-            />
-          ) : (
-            <div className="flex flex-col gap-6">
-              {/* Toolbar */}
-              <div className="flex flex-wrap items-center justify-between gap-4 p-4 border rounded-xl bg-card/50 backdrop-blur-sm">
-                <div className="flex items-center gap-3">
-                  <div className="inline-flex items-center p-1 rounded-md bg-muted/40">
-                    <button
-                      type="button"
-                      onClick={() => setViewMode("pages")}
-                      className={cn(
-                        "px-3 py-1 text-sm rounded-md",
-                        viewMode === "pages" ? "bg-white dark:bg-gray-800 shadow" : "hover:bg-muted/60",
-                      )}
-                    >
-                      Pages
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setViewMode("files")}
-                      className={cn(
-                        "px-3 py-1 text-sm rounded-md",
-                        viewMode === "files" ? "bg-white dark:bg-gray-800 shadow" : "hover:bg-muted/60",
-                      )}
-                    >
-                      Files
-                    </button>
-                  </div>
-
-                  <h3 className="text-lg font-semibold">
-                    {viewMode === "pages"
-                      ? `${pages.length} Page${pages.length !== 1 ? "s" : ""}`
-                      : `${files.length} File${files.length !== 1 ? "s" : ""}`}
-                  </h3>
-
-                  {isProcessing && (
-                    <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Processing...
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <div className="relative cursor-pointer">
-                    <input
-                      type="file"
-                      multiple
-                      accept="application/pdf"
-                      onChange={handleAddMore}
-                      className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
-                      title="Add more files"
-                    />
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Plus className="w-4 h-4" />
-                      Add Files
-                    </Button>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={resetMerge}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+    <div className="w-full">
+      {/* Upload Section */}
+      <section aria-labelledby="upload-section" className="max-w-5xl mx-auto">
+        {pages.length === 0 && !isProcessing ? (
+          <FileUpload mode="append" maxFiles={5} onFilesSelected={handleFilesSelected} acceptedFileTypes={["application/pdf"]} />
+        ) : (
+          <div className="flex flex-col gap-6">
+            {/* Toolbar */}
+            <div className="flex flex-wrap items-center justify-between gap-4 p-4 border rounded-xl bg-card">
+              <div className="flex items-center gap-3">
+                <div className="inline-flex items-center p-1 rounded-md bg-muted/40">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("pages")}
+                    className={cn(
+                      "px-3 py-1 text-sm rounded-md",
+                      viewMode === "pages" ? "bg-white dark:bg-gray-800 shadow" : "hover:bg-muted/60",
+                    )}
                   >
-                    Clear All
-                  </Button>
+                    Pages
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("files")}
+                    className={cn(
+                      "px-3 py-1 text-sm rounded-md",
+                      viewMode === "files" ? "bg-white dark:bg-gray-800 shadow" : "hover:bg-muted/60",
+                    )}
+                  >
+                    Files
+                  </button>
                 </div>
+
+                <h3 className="text-lg font-semibold">
+                  {viewMode === "pages"
+                    ? `${pages.length} Page${pages.length !== 1 ? "s" : ""}`
+                    : `${files.length} File${files.length !== 1 ? "s" : ""}`}
+                </h3>
+
+                {isProcessing && (
+                  <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </span>
+                )}
               </div>
 
-              {/* Pages Grid with Drag and Drop OR File-level reordering */}
-              {viewMode === "pages" ? (
-                <SortablePDFGrid
-                  pages={pages}
-                  onPagesChange={setPages}
-                  onRotate={(id) => rotatePage(id, "cw")}
-                  onRemove={removePage}
-                />
-              ) : (
-                <div className="space-y-3">
-                  {files.map((f, idx) => {
-                    const count = pages.filter((p) => p.fileId === f.id).length;
-                    return (
-                      <div
-                        key={f.id}
-                        className="flex items-center justify-between gap-4 p-3 bg-white border rounded-lg shadow-sm dark:bg-card border-border"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center justify-center w-10 h-10 rounded-md bg-muted">
-                            <svg className="w-5 h-5 text-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                              <title>File Icon</title>
-                              <path
-                                d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </div>
-                          <div>
-                            <div className="max-w-xs font-medium truncate">{f.file.name}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {count} page{count !== 1 ? "s" : ""}
-                            </div>
-                          </div>
-                        </div>
+              <div className="flex items-center gap-2">
+                <div className="relative cursor-pointer">
+                  <input
+                    type="file"
+                    multiple
+                    accept="application/pdf"
+                    onChange={handleAddMore}
+                    className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
+                    title="Add more files"
+                  />
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Add Files
+                  </Button>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={resetMerge}
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                >
+                  Clear All
+                </Button>
+              </div>
+            </div>
 
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="w-8 h-8"
-                            onClick={() => moveFile(idx, "up")}
-                            disabled={idx === 0}
-                          >
-                            <ArrowUp className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="w-8 h-8"
-                            onClick={() => moveFile(idx, "down")}
-                            disabled={idx === files.length - 1}
-                          >
-                            <ArrowDown className="w-4 h-4" />
-                          </Button>
-                          <Button variant="destructive" size="icon" className="w-8 h-8" onClick={() => removeFile(f.id)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+            {/* Pages Grid with Drag and Drop OR File-level reordering */}
+            {viewMode === "pages" ? (
+              <SortablePDFGrid
+                pages={pages}
+                onPagesChange={setPages}
+                onRotate={(id) => rotatePage(id, "cw")}
+                onRemove={removePage}
+              />
+            ) : (
+              <div className="space-y-3">
+                {files.map((f, idx) => {
+                  const count = pages.filter((p) => p.fileId === f.id).length;
+                  return (
+                    <div
+                      key={f.id}
+                      className="flex items-center justify-between gap-4 p-3 bg-white border rounded-lg shadow-sm dark:bg-card border-border"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-md bg-muted">
+                          <svg className="w-5 h-5 text-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <title>File Icon</title>
+                            <path
+                              d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="max-w-xs font-medium truncate">{f.file.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {count} page{count !== 1 ? "s" : ""}
+                          </div>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-        </section>
 
-        {/* Progress Bar */}
-        {isMerging && (
-          <div className="max-w-3xl mx-auto mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Merging Pages...</span>
-              <span className="text-sm text-muted-foreground">{Math.round(mergeProgress)}%</span>
-            </div>
-            <Progress value={mergeProgress} className="w-full h-2" />
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="w-8 h-8"
+                          onClick={() => moveFile(idx, "up")}
+                          disabled={idx === 0}
+                        >
+                          <ArrowUp className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="w-8 h-8"
+                          onClick={() => moveFile(idx, "down")}
+                          disabled={idx === files.length - 1}
+                        >
+                          <ArrowDown className="w-4 h-4" />
+                        </Button>
+                        <Button variant="destructive" size="icon" className="w-8 h-8" onClick={() => removeFile(f.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
+      </section>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col justify-center gap-4 mt-8 sm:flex-row">
-          <Button
-            onClick={mergePDFs}
-            disabled={pages.length === 0 || isMerging || isProcessing}
-            size="lg"
-            className="min-w-40 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-          >
-            {isMerging ? "Merging..." : "Merge PDF"}
-          </Button>
-
-          {mergedPdf && (
-            <Button
-              onClick={downloadMergedPDF}
-              variant="outline"
-              size="lg"
-              className="text-blue-700 border-blue-200 min-w-40 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/40"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Download PDF
-            </Button>
-          )}
+      {/* Progress Bar */}
+      {isMerging && (
+        <div className="max-w-3xl mx-auto mt-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">Merging Pages...</span>
+            <span className="text-sm text-muted-foreground">{Math.round(mergeProgress)}%</span>
+          </div>
+          <Progress value={mergeProgress} className="w-full h-2" />
         </div>
+      )}
+
+      {/* Action Buttons */}
+      <div className="flex flex-col justify-center gap-4 mt-8 sm:flex-row">
+        <Button
+          onClick={mergePDFs}
+          disabled={pages.length === 0 || isMerging || isProcessing}
+          size="lg"
+          className="min-w-40 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+        >
+          {isMerging ? "Merging..." : "Merge PDF"}
+        </Button>
+
+        {mergedPdf && (
+          <Button
+            onClick={downloadMergedPDF}
+            variant="outline"
+            size="lg"
+            className="text-blue-700 border-blue-200 min-w-40 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/40"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download PDF
+          </Button>
+        )}
       </div>
     </div>
   );

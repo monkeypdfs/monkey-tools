@@ -6,6 +6,7 @@ import { FAQSchema } from "@/modules/tools/ui/components/faq-schema";
 import { ToolLoading } from "@/modules/common/ui/components/tool-loading";
 import { PDFLibProvider } from "@/modules/common/providers/pdf-lib-provider";
 import { InvalidToolSelection } from "@/modules/common/ui/components/invalid-tool-selection";
+import { AdPlaceholder } from "@/modules/common/ui/components/ad-placeholder";
 
 interface ToolViewProps {
   toolCategory: string;
@@ -29,68 +30,90 @@ export const ToolView = async ({ toolCategory, tool }: ToolViewProps) => {
     const { default: ToolComponent } = await import(`@/modules/tools/ui/components/${tool}`);
 
     return (
-      <div className="container px-4 py-12 mx-auto">
-        {/* H1 + Intro */}
-        <div className="text-center">
-          <h1 className="max-w-4xl mx-auto mt-10 text-4xl font-bold md:text-5xl">{toolData.h1Heading || toolData.title}</h1>
-          {toolData.introText && (
-            <p className="mt-5 max-w-3xl mx-auto text-lg leading-relaxed text-muted-foreground">{toolData.introText}</p>
-          )}
+      <div className="container mx-auto px-4 py-8">
+        {/* Ad - Top */}
+        <div className="mb-6">
+          <AdPlaceholder position="top" />
         </div>
 
-        {/* Tool Component - heading/description removed from individual components */}
-        <Suspense fallback={<ToolLoading />}>
-          <PDFLibProvider>
-            <ToolComponent />
-          </PDFLibProvider>
-        </Suspense>
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Main Content */}
+          <div className="flex-1">
+            {/* Tool Header */}
+            <div className="mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{toolData.h1Heading || toolData.title}</h1>
+              {toolData.introText && <p className="text-muted-foreground">{toolData.introText}</p>}
+            </div>
 
-        {/* Visual Steps */}
-        {toolData.visualSteps && toolData.visualSteps.length > 0 && (
-          <section className="my-16">
-            <h2 className="mb-8 text-3xl font-bold text-center">{toolData.stepsTitle || `How to use ${toolData.title}`}</h2>
-            <ToolSteps steps={toolData.visualSteps} />
-          </section>
-        )}
+            {/* Tool Card */}
+            <div className="bg-card border border-border rounded-lg p-6 md:p-8 mb-8">
+              <Suspense fallback={<ToolLoading />}>
+                <PDFLibProvider>
+                  <ToolComponent />
+                </PDFLibProvider>
+              </Suspense>
+            </div>
 
-        {/* Rich Content */}
-        {toolData.richContent && (
-          <>
-            <hr className="my-16 border-t border-border/40" />
-            <section className="max-w-4xl mx-auto my-20">
-              <div
-                className="prose prose-lg dark:prose-invert max-w-none 
-                  [&_h2]:text-3xl [&_h2]:font-bold [&_h2]:mt-8 [&_h2]:mb-4
-                  [&_h3]:text-2xl [&_h3]:font-semibold [&_h3]:mt-6 [&_h3]:mb-3
-                  [&_p]:text-base [&_p]:my-4 [&_p]:leading-relaxed
-                  [&_ul]:list-disc! [&_ul]:pl-8! [&_ul]:my-4! 
-                  [&_ol]:list-decimal! [&_ol]:pl-8! [&_ol]:my-4! 
-                  [&_li]:my-2! [&_li]:list-item!
-                  [&_strong]:font-bold [&_em]:italic
-                  [&_a]:text-primary [&_a]:underline"
-                // biome-ignore lint/security/noDangerouslySetInnerHtml: Content is from trusted admin
-                dangerouslySetInnerHTML={{ __html: toolData.richContent }}
-              />
-            </section>
-            <hr className="my-16 border-t border-border/40" />
-          </>
-        )}
+            {/* Visual Steps */}
+            {toolData.visualSteps && toolData.visualSteps.length > 0 && (
+              <div className="mb-8">
+                <h2 className="mb-6 text-2xl font-bold">{toolData.stepsTitle || `How to use ${toolData.title}`}</h2>
+                <ToolSteps steps={toolData.visualSteps} />
+              </div>
+            )}
 
-        {/* FAQs */}
-        {toolData.faqs && toolData.faqs.length > 0 && (
-          <section className="max-w-3xl mx-auto my-16">
-            <h2 className="mb-8 text-3xl font-bold text-center">Frequently Asked Questions</h2>
-            <ToolFAQ faqs={toolData.faqs} />
-            <FAQSchema faqs={toolData.faqs} />
-          </section>
-        )}
+            {/* SEO Content */}
+            {toolData.richContent && (
+              <div className="mb-8">
+                <div className="bg-card border border-border rounded-lg p-6">
+                  <div
+                    className="prose prose-lg dark:prose-invert max-w-none 
+                      [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mt-6 [&_h2]:mb-4
+                      [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-3
+                      [&_p]:text-base [&_p]:my-3 [&_p]:leading-relaxed
+                      [&_ul]:list-disc! [&_ul]:pl-6! [&_ul]:my-3! 
+                      [&_ol]:list-decimal! [&_ol]:pl-6! [&_ol]:my-3! 
+                      [&_li]:my-1.5! [&_li]:list-item!
+                      [&_strong]:font-semibold [&_em]:italic
+                      [&_a]:text-primary [&_a]:underline"
+                    // biome-ignore lint/security/noDangerouslySetInnerHtml: Content is from trusted admin
+                    dangerouslySetInnerHTML={{ __html: toolData.richContent }}
+                  />
+                </div>
+              </div>
+            )}
 
-        {/* Closing Text */}
-        {toolData.closingText && (
-          <section className="max-w-3xl mx-auto my-16 text-center">
-            <p className="text-lg leading-relaxed text-muted-foreground">{toolData.closingText}</p>
-          </section>
-        )}
+            {/* FAQs */}
+            {toolData.faqs && toolData.faqs.length > 0 && (
+              <div className="mb-8">
+                <h2 className="mb-6 text-2xl font-bold">Frequently Asked Questions</h2>
+                <ToolFAQ faqs={toolData.faqs} />
+                <FAQSchema faqs={toolData.faqs} />
+              </div>
+            )}
+
+            {/* Closing Text */}
+            {toolData.closingText && (
+              <div className="mb-8">
+                <div className="bg-card border border-border rounded-lg p-6">
+                  <p className="text-base leading-relaxed text-muted-foreground">{toolData.closingText}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar - Desktop Only */}
+          <div className="hidden lg:block w-72">
+            <div className="sticky top-24">
+              <AdPlaceholder position="sidebar" />
+            </div>
+          </div>
+        </div>
+
+        {/* Ad - Bottom */}
+        <div className="mt-8">
+          <AdPlaceholder position="bottom" />
+        </div>
       </div>
     );
   } catch {

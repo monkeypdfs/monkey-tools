@@ -9,7 +9,6 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { PDFDocument, rgb, StandardFonts, degrees } from "pdf-lib";
 import { Alert, AlertTitle, AlertDescription } from "@workspace/ui/components/alert";
-import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 import { Download, Loader2, FileText, Trash2, Settings, CheckCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
 
@@ -357,340 +356,336 @@ export default function AddWatermarkPDF() {
   ];
 
   return (
-    <div className="relative w-full overflow-hidden bg-background text-foreground">
-      <BackgroundElements />
+    <div className="w-full">
+      {/* Upload interface */}
+      {!selectedFile && (
+        <section className="max-w-4xl mx-auto mb-8">
+          <div className="space-y-4">
+            <FileUpload
+              onFilesSelected={handleFileSelect}
+              acceptedFileTypes={["application/pdf"]}
+              maxFiles={1}
+              maxFileSize={50}
+            />
+          </div>
+        </section>
+      )}
 
-      <div className="container relative z-10 px-4 mx-auto">
-        {/* Upload interface */}
-        {!selectedFile && (
-          <section className="max-w-4xl mx-auto mb-8">
-            <div className="space-y-4">
-              <FileUpload
-                onFilesSelected={handleFileSelect}
-                acceptedFileTypes={["application/pdf"]}
-                maxFiles={1}
-                maxFileSize={50}
-              />
-            </div>
-          </section>
-        )}
+      {/* Main watermark interface */}
+      {selectedFile && pdfDoc && (
+        <div className="mx-auto my-10 max-w-7xl">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            {/* Preview Area */}
+            <div className="space-y-6 lg:col-span-2">
+              {/* File Info with Page Navigation */}
+              <div className="flex flex-col justify-between gap-3 p-3 rounded-lg sm:flex-row sm:items-center bg-muted">
+                <div className="flex items-center flex-1 min-w-0 gap-2">
+                  <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <span className="text-sm font-medium truncate" title={selectedFile.name}>
+                    {truncateFileName(selectedFile.name)}
+                  </span>
+                  <span className="text-sm text-muted-foreground shrink-0">({formatFileSize(selectedFile.size)})</span>
+                </div>
 
-        {/* Main watermark interface */}
-        {selectedFile && pdfDoc && (
-          <div className="mx-auto my-10 max-w-7xl">
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-              {/* Preview Area */}
-              <div className="space-y-6 lg:col-span-2">
-                {/* File Info with Page Navigation */}
-                <div className="flex flex-col justify-between gap-3 p-3 rounded-lg sm:flex-row sm:items-center bg-muted">
-                  <div className="flex items-center flex-1 min-w-0 gap-2">
-                    <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
-                    <span className="text-sm font-medium truncate" title={selectedFile.name}>
-                      {truncateFileName(selectedFile.name)}
+                {/* Page Navigation */}
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((p) => Math.max(pageRange.from, p - 1))}
+                      disabled={currentPage === pageRange.from}
+                    >
+                      Previous
+                    </Button>
+                    <span className="px-2 text-sm whitespace-nowrap">
+                      Page {currentPage} of {totalPages}
                     </span>
-                    <span className="text-sm text-muted-foreground shrink-0">({formatFileSize(selectedFile.size)})</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((p) => Math.min(pageRange.to, p + 1))}
+                      disabled={currentPage === pageRange.to}
+                    >
+                      Next
+                    </Button>
                   </div>
+                )}
+              </div>
 
-                  {/* Page Navigation */}
-                  {totalPages > 1 && (
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage((p) => Math.max(pageRange.from, p - 1))}
-                        disabled={currentPage === pageRange.from}
-                      >
-                        Previous
-                      </Button>
-                      <span className="px-2 text-sm whitespace-nowrap">
-                        Page {currentPage} of {totalPages}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage((p) => Math.min(pageRange.to, p + 1))}
-                        disabled={currentPage === pageRange.to}
-                      >
-                        Next
-                      </Button>
+              {/* Preview */}
+              <div className="p-4 rounded-lg bg-muted">
+                <div className="relative flex items-center justify-center w-full overflow-hidden bg-white rounded shadow-lg h-150">
+                  {previewUrl ? (
+                    <>
+                      <iframe
+                        src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                        className="w-full h-full border-0"
+                        title="PDF Preview"
+                        key={previewUrl}
+                      />
+                      {isUpdatingPreview && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                      <Loader2 className="w-8 h-8 animate-spin" />
+                      <span>Loading preview...</span>
                     </div>
                   )}
                 </div>
-
-                {/* Preview */}
-                <div className="p-4 rounded-lg bg-muted">
-                  <div className="relative flex items-center justify-center w-full overflow-hidden bg-white rounded shadow-lg h-150">
-                    {previewUrl ? (
-                      <>
-                        <iframe
-                          src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-                          className="w-full h-full border-0"
-                          title="PDF Preview"
-                          key={previewUrl}
-                        />
-                        {isUpdatingPreview && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                        <Loader2 className="w-8 h-8 animate-spin" />
-                        <span>Loading preview...</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-wrap justify-center gap-4">
-                  <Button size="lg" onClick={applyWatermark} disabled={isProcessing}>
-                    {isProcessing ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <Download className="w-4 h-4" />
-                        Download Watermarked PDF
-                      </>
-                    )}
-                  </Button>
-                  <Button size="lg" variant="outline" onClick={resetAll}>
-                    <Trash2 className="w-4 h-4" />
-                    Upload New PDF
-                  </Button>
-                </div>
               </div>
 
-              {/* Settings Sidebar */}
-              <div className="lg:col-span-1">
-                <div className="sticky space-y-6 top-8">
-                  {/* Watermark Settings */}
-                  <div className="p-6 space-y-6 border rounded-lg bg-card">
-                    <div className="flex items-center gap-2">
-                      <Settings className="w-5 h-5 text-primary" />
-                      <h3 className="text-lg font-semibold">Watermark Settings</h3>
-                    </div>
+              {/* Action Buttons */}
+              <div className="flex flex-wrap justify-center gap-4">
+                <Button size="lg" onClick={applyWatermark} disabled={isProcessing}>
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" />
+                      Download Watermarked PDF
+                    </>
+                  )}
+                </Button>
+                <Button size="lg" variant="outline" onClick={resetAll}>
+                  <Trash2 className="w-4 h-4" />
+                  Upload New PDF
+                </Button>
+              </div>
+            </div>
 
-                    {/* Text */}
-                    <div className="space-y-2">
-                      <Label>Watermark Text</Label>
-                      <Input
-                        value={settings.text}
-                        onChange={(e) => setSettings({ ...settings, text: e.target.value })}
-                        placeholder="Enter watermark text"
-                      />
-                    </div>
-
-                    {/* Font Family */}
-                    <div className="space-y-2">
-                      <Label>Font Family</Label>
-                      <Select
-                        value={settings.fontFamily}
-                        onValueChange={(value) => setSettings({ ...settings, fontFamily: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {fontOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Font Size */}
-                    <div className="space-y-2">
-                      <Label>Font Size: {settings.fontSize}px</Label>
-                      <Slider
-                        value={[settings.fontSize]}
-                        onValueChange={([value]) => value !== undefined && setSettings({ ...settings, fontSize: value })}
-                        min={12}
-                        max={120}
-                        step={1}
-                      />
-                    </div>
-
-                    {/* Opacity */}
-                    <div className="space-y-2">
-                      <Label>Opacity: {Math.round(settings.opacity * 100)}%</Label>
-                      <Slider
-                        value={[settings.opacity * 100]}
-                        onValueChange={([value]) => value !== undefined && setSettings({ ...settings, opacity: value / 100 })}
-                        min={0}
-                        max={100}
-                        step={1}
-                      />
-                    </div>
-
-                    {/* Rotation */}
-                    <div className="space-y-2">
-                      <Label>Rotation</Label>
-                      <Select
-                        value={settings.rotation.toString()}
-                        onValueChange={(value) => setSettings({ ...settings, rotation: Number(value) })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {rotationOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value.toString()}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Pages */}
-                    <div className="space-y-2">
-                      <Label>Pages</Label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-1">
-                          <Label className="text-xs text-muted-foreground">From</Label>
-                          <Input
-                            type="number"
-                            min={1}
-                            max={totalPages}
-                            value={pageRange.from}
-                            onChange={(e) => {
-                              const value = Math.max(1, Math.min(totalPages, Number(e.target.value) || 1));
-                              const newPageRange = { ...pageRange, from: value };
-                              // Ensure 'to' is at least equal to 'from'
-                              if (value > pageRange.to) {
-                                newPageRange.to = value;
-                              }
-                              setPageRange(newPageRange);
-                              // Update current page to show preview in range
-                              if (currentPage < value) {
-                                setCurrentPage(value);
-                              } else if (currentPage > pageRange.to) {
-                                setCurrentPage(value);
-                              }
-                            }}
-                            onBlur={(e) => {
-                              if (!e.target.value) {
-                                setPageRange({ ...pageRange, from: 1 });
-                              }
-                            }}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs text-muted-foreground">To</Label>
-                          <Input
-                            type="number"
-                            min={pageRange.from}
-                            max={totalPages}
-                            value={pageRange.to}
-                            onChange={(e) => {
-                              const value = Math.max(pageRange.from, Math.min(totalPages, Number(e.target.value) || totalPages));
-                              setPageRange({ ...pageRange, to: value });
-                              // Update current page to show preview in range
-                              if (currentPage > value) {
-                                setCurrentPage(value);
-                              } else if (currentPage < pageRange.from) {
-                                setCurrentPage(pageRange.from);
-                              }
-                            }}
-                            onBlur={(e) => {
-                              if (!e.target.value) {
-                                setPageRange({ ...pageRange, to: totalPages });
-                              }
-                            }}
-                          />
-                        </div>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Watermark will apply to pages {pageRange.from}-{pageRange.to}
-                      </p>
-                    </div>
-
-                    {/* Position */}
-                    <div className="space-y-2">
-                      <Label>Position</Label>
-                      <Select
-                        value={settings.position}
-                        onValueChange={(value) => setSettings({ ...settings, position: value as WatermarkSettings["position"] })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {positionOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Layer */}
-                    <div className="space-y-2">
-                      <Label>Layer</Label>
-                      <Select
-                        value={settings.layer}
-                        onValueChange={(value) => setSettings({ ...settings, layer: value as WatermarkSettings["layer"] })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="over">Over Text</SelectItem>
-                          <SelectItem value="under">Under Text</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Color */}
-                    <div className="space-y-2">
-                      <Label>Color</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          type="color"
-                          value={settings.color}
-                          onChange={(e) => setSettings({ ...settings, color: e.target.value })}
-                          className="w-16 h-10 p-1"
-                        />
-                        <Input
-                          type="text"
-                          value={settings.color}
-                          onChange={(e) => setSettings({ ...settings, color: e.target.value })}
-                          className="flex-1"
-                        />
-                      </div>
-                    </div>
+            {/* Settings Sidebar */}
+            <div className="lg:col-span-1">
+              <div className="sticky space-y-6 top-8">
+                {/* Watermark Settings */}
+                <div className="p-6 space-y-6 border rounded-lg bg-card">
+                  <div className="flex items-center gap-2">
+                    <Settings className="w-5 h-5 text-primary" />
+                    <h3 className="text-lg font-semibold">Watermark Settings</h3>
                   </div>
 
-                  {/* Tips */}
-                  <Alert>
-                    <CheckCircle className="w-4 h-4" />
-                    <AlertTitle>Watermark Tips</AlertTitle>
-                    <AlertDescription className="text-sm">
-                      <ul className="mt-2 space-y-1">
-                        <li>• Adjust opacity for subtle watermarks</li>
-                        <li>• Use rotation for diagonal effects</li>
-                        <li>• Preview updates automatically</li>
-                        <li>• Watermark applies to all pages</li>
-                      </ul>
-                    </AlertDescription>
-                  </Alert>
+                  {/* Text */}
+                  <div className="space-y-2">
+                    <Label>Watermark Text</Label>
+                    <Input
+                      value={settings.text}
+                      onChange={(e) => setSettings({ ...settings, text: e.target.value })}
+                      placeholder="Enter watermark text"
+                    />
+                  </div>
+
+                  {/* Font Family */}
+                  <div className="space-y-2">
+                    <Label>Font Family</Label>
+                    <Select
+                      value={settings.fontFamily}
+                      onValueChange={(value) => setSettings({ ...settings, fontFamily: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {fontOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Font Size */}
+                  <div className="space-y-2">
+                    <Label>Font Size: {settings.fontSize}px</Label>
+                    <Slider
+                      value={[settings.fontSize]}
+                      onValueChange={([value]) => value !== undefined && setSettings({ ...settings, fontSize: value })}
+                      min={12}
+                      max={120}
+                      step={1}
+                    />
+                  </div>
+
+                  {/* Opacity */}
+                  <div className="space-y-2">
+                    <Label>Opacity: {Math.round(settings.opacity * 100)}%</Label>
+                    <Slider
+                      value={[settings.opacity * 100]}
+                      onValueChange={([value]) => value !== undefined && setSettings({ ...settings, opacity: value / 100 })}
+                      min={0}
+                      max={100}
+                      step={1}
+                    />
+                  </div>
+
+                  {/* Rotation */}
+                  <div className="space-y-2">
+                    <Label>Rotation</Label>
+                    <Select
+                      value={settings.rotation.toString()}
+                      onValueChange={(value) => setSettings({ ...settings, rotation: Number(value) })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {rotationOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value.toString()}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Pages */}
+                  <div className="space-y-2">
+                    <Label>Pages</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">From</Label>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={totalPages}
+                          value={pageRange.from}
+                          onChange={(e) => {
+                            const value = Math.max(1, Math.min(totalPages, Number(e.target.value) || 1));
+                            const newPageRange = { ...pageRange, from: value };
+                            // Ensure 'to' is at least equal to 'from'
+                            if (value > pageRange.to) {
+                              newPageRange.to = value;
+                            }
+                            setPageRange(newPageRange);
+                            // Update current page to show preview in range
+                            if (currentPage < value) {
+                              setCurrentPage(value);
+                            } else if (currentPage > pageRange.to) {
+                              setCurrentPage(value);
+                            }
+                          }}
+                          onBlur={(e) => {
+                            if (!e.target.value) {
+                              setPageRange({ ...pageRange, from: 1 });
+                            }
+                          }}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">To</Label>
+                        <Input
+                          type="number"
+                          min={pageRange.from}
+                          max={totalPages}
+                          value={pageRange.to}
+                          onChange={(e) => {
+                            const value = Math.max(pageRange.from, Math.min(totalPages, Number(e.target.value) || totalPages));
+                            setPageRange({ ...pageRange, to: value });
+                            // Update current page to show preview in range
+                            if (currentPage > value) {
+                              setCurrentPage(value);
+                            } else if (currentPage < pageRange.from) {
+                              setCurrentPage(pageRange.from);
+                            }
+                          }}
+                          onBlur={(e) => {
+                            if (!e.target.value) {
+                              setPageRange({ ...pageRange, to: totalPages });
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Watermark will apply to pages {pageRange.from}-{pageRange.to}
+                    </p>
+                  </div>
+
+                  {/* Position */}
+                  <div className="space-y-2">
+                    <Label>Position</Label>
+                    <Select
+                      value={settings.position}
+                      onValueChange={(value) => setSettings({ ...settings, position: value as WatermarkSettings["position"] })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {positionOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Layer */}
+                  <div className="space-y-2">
+                    <Label>Layer</Label>
+                    <Select
+                      value={settings.layer}
+                      onValueChange={(value) => setSettings({ ...settings, layer: value as WatermarkSettings["layer"] })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="over">Over Text</SelectItem>
+                        <SelectItem value="under">Under Text</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Color */}
+                  <div className="space-y-2">
+                    <Label>Color</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="color"
+                        value={settings.color}
+                        onChange={(e) => setSettings({ ...settings, color: e.target.value })}
+                        className="w-16 h-10 p-1"
+                      />
+                      <Input
+                        type="text"
+                        value={settings.color}
+                        onChange={(e) => setSettings({ ...settings, color: e.target.value })}
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
                 </div>
+
+                {/* Tips */}
+                <Alert>
+                  <CheckCircle className="w-4 h-4" />
+                  <AlertTitle>Watermark Tips</AlertTitle>
+                  <AlertDescription className="text-sm">
+                    <ul className="mt-2 space-y-1">
+                      <li>• Adjust opacity for subtle watermarks</li>
+                      <li>• Use rotation for diagonal effects</li>
+                      <li>• Preview updates automatically</li>
+                      <li>• Watermark applies to all pages</li>
+                    </ul>
+                  </AlertDescription>
+                </Alert>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Hidden Canvas */}
-        <canvas ref={canvasRef} className="hidden" />
-      </div>
+      {/* Hidden Canvas */}
+      <canvas ref={canvasRef} className="hidden" />
     </div>
   );
 }

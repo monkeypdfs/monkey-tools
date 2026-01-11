@@ -10,7 +10,6 @@ import { Button } from "@workspace/ui/components/button";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { Alert, AlertDescription, AlertTitle } from "@workspace/ui/components/alert";
-import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 import { Download, Table as TableIcon, Trash2, Code, FileSpreadsheet, RefreshCw } from "lucide-react";
 
 type InputMode = "paste" | "upload";
@@ -195,99 +194,96 @@ export default function JsonToExcelConverter() {
 
   return (
     <div className="relative w-full min-h-screen bg-background text-foreground">
-      <BackgroundElements />
+      <div className="max-w-4xl mx-auto space-y-12">
+        <div className="space-y-8">
+          {/* Input Section */}
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold tracking-tight">1. Input JSON Data</h2>
+            <p className="text-muted-foreground">
+              Paste your JSON data below or upload a .json file to convert it to an Excel spreadsheet.
+            </p>
 
-      <div className="container relative z-10 px-4 py-10 mx-auto">
-        <div className="max-w-4xl mx-auto space-y-12">
-          <div className="space-y-8">
-            {/* Input Section */}
-            <div className="space-y-4">
-              <h2 className="text-2xl font-bold tracking-tight">1. Input JSON Data</h2>
-              <p className="text-muted-foreground">
-                Paste your JSON data below or upload a .json file to convert it to an Excel spreadsheet.
-              </p>
-
-              <div className="flex items-center gap-4 p-1 mb-4 rounded-lg bg-muted w-fit">
-                <Button variant={inputMode === "paste" ? "default" : "ghost"} onClick={() => setInputMode("paste")} size="sm">
-                  <Code className="w-4 h-4 mr-2" />
-                  Paste JSON
-                </Button>
-                <Button variant={inputMode === "upload" ? "default" : "ghost"} onClick={() => setInputMode("upload")} size="sm">
-                  <FileSpreadsheet className="w-4 h-4 mr-2" />
-                  Upload File
-                </Button>
-              </div>
-
-              {inputMode === "paste" ? (
-                <div className="space-y-4 duration-200 animate-in fade-in zoom-in-95">
-                  <div className="relative border rounded-lg shadow-xs h-96">
-                    <Textarea
-                      placeholder='[{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]'
-                      className="w-full h-full p-4 font-mono text-xs border-0 resize-none focus-visible:ring-0 sm:text-sm"
-                      value={jsonInput}
-                      onChange={handlePasteChange}
-                    />
-                    <div className="absolute flex gap-2 bottom-4 right-4">
-                      <Button size="sm" variant="secondary" onClick={clearAll} disabled={!jsonInput} className="shadow-sm">
-                        <Trash2 className="w-3 h-3 mr-2" />
-                        Clear
-                      </Button>
-                      <Button size="sm" onClick={processInput} disabled={!jsonInput} className="shadow-sm">
-                        <RefreshCw className="w-3 h-3 mr-2" />
-                        Process JSON
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center border-2 border-dashed rounded-lg h-96 border-muted bg-muted/20 animate-in fade-in zoom-in-95">
-                  <FileUpload
-                    onFilesSelected={handleFileUpload}
-                    acceptedFileTypes={["application/json"]}
-                    maxFiles={1}
-                    maxFileSize={10} // 10MB
-                  />
-                </div>
-              )}
-
-              {error && (
-                <Alert variant="destructive">
-                  <AlertTitle>Error Parsing JSON</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
+            <div className="flex items-center gap-4 p-1 mb-4 rounded-lg bg-muted w-fit">
+              <Button variant={inputMode === "paste" ? "default" : "ghost"} onClick={() => setInputMode("paste")} size="sm">
+                <Code className="w-4 h-4 mr-2" />
+                Paste JSON
+              </Button>
+              <Button variant={inputMode === "upload" ? "default" : "ghost"} onClick={() => setInputMode("upload")} size="sm">
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Upload File
+              </Button>
             </div>
 
-            {/* Preview & Output Section - Only show if sheets exist or we want to show placeholder */}
-            <div className="space-y-4">
-              <h2 className="text-2xl font-bold tracking-tight">2. Preview & Export</h2>
-              <p className="text-muted-foreground">Verify your data structure before downloading.</p>
-
-              <Card className="overflow-hidden border shadow-sm h-fit">
-                <div className="flex flex-col p-0">
-                  <div className="flex items-center justify-between p-4 border-b bg-muted/30">
-                    <div className="flex items-center gap-2">
-                      <TableIcon className="w-5 h-5 text-primary" />
-                      <h3 className="font-semibold">Data Preview</h3>
-                    </div>
-                    {sheets && activeSheet && (
-                      <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-0.5 font-mono text-xs font-medium rounded-full bg-primary/10 text-primary border border-primary/20">
-                          {activeSheet.data.length} Rows
-                        </span>
-                      </div>
-                    )}
+            {inputMode === "paste" ? (
+              <div className="space-y-4 duration-200 animate-in fade-in zoom-in-95">
+                <div className="relative border rounded-lg shadow-xs h-96">
+                  <Textarea
+                    placeholder='[{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]'
+                    className="w-full h-full p-4 font-mono text-xs border-0 resize-none focus-visible:ring-0 sm:text-sm"
+                    value={jsonInput}
+                    onChange={handlePasteChange}
+                  />
+                  <div className="absolute flex gap-2 bottom-4 right-4">
+                    <Button size="sm" variant="secondary" onClick={clearAll} disabled={!jsonInput} className="shadow-sm">
+                      <Trash2 className="w-3 h-3 mr-2" />
+                      Clear
+                    </Button>
+                    <Button size="sm" onClick={processInput} disabled={!jsonInput} className="shadow-sm">
+                      <RefreshCw className="w-3 h-3 mr-2" />
+                      Process JSON
+                    </Button>
                   </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center border-2 border-dashed rounded-lg h-96 border-muted bg-muted/20 animate-in fade-in zoom-in-95">
+                <FileUpload
+                  onFilesSelected={handleFileUpload}
+                  acceptedFileTypes={["application/json"]}
+                  maxFiles={1}
+                  maxFileSize={10} // 10MB
+                />
+              </div>
+            )}
 
-                  {/* Sheet Tabs */}
-                  {sheets && sheets.length > 1 && (
-                    <div className="flex gap-2 px-4 pt-4 pb-0 overflow-x-auto border-b bg-background">
-                      {sheets.map((sheet, idx) => (
-                        <button
-                          type="button"
-                          key={sheet.name}
-                          onClick={() => setActiveSheetIndex(idx)}
-                          className={`
+            {error && (
+              <Alert variant="destructive">
+                <AlertTitle>Error Parsing JSON</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+          </div>
+
+          {/* Preview & Output Section - Only show if sheets exist or we want to show placeholder */}
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold tracking-tight">2. Preview & Export</h2>
+            <p className="text-muted-foreground">Verify your data structure before downloading.</p>
+
+            <Card className="overflow-hidden border shadow-sm h-fit">
+              <div className="flex flex-col p-0">
+                <div className="flex items-center justify-between p-4 border-b bg-muted/30">
+                  <div className="flex items-center gap-2">
+                    <TableIcon className="w-5 h-5 text-primary" />
+                    <h3 className="font-semibold">Data Preview</h3>
+                  </div>
+                  {sheets && activeSheet && (
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 font-mono text-xs font-medium rounded-full bg-primary/10 text-primary border border-primary/20">
+                        {activeSheet.data.length} Rows
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Sheet Tabs */}
+                {sheets && sheets.length > 1 && (
+                  <div className="flex gap-2 px-4 pt-4 pb-0 overflow-x-auto border-b bg-background">
+                    {sheets.map((sheet, idx) => (
+                      <button
+                        type="button"
+                        key={sheet.name}
+                        onClick={() => setActiveSheetIndex(idx)}
+                        className={`
                                                         px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap
                                                         ${
                                                           activeSheetIndex === idx
@@ -295,92 +291,91 @@ export default function JsonToExcelConverter() {
                                                             : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/50"
                                                         }
                                                     `}
-                        >
-                          {sheet.name}
-                        </button>
-                      ))}
+                      >
+                        {sheet.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="relative overflow-auto min-h-75 max-h-125 bg-background">
+                  {sheets && activeSheet ? (
+                    <div className="min-w-max">
+                      <table className="w-full text-sm text-left border-collapse">
+                        <thead className="sticky top-0 z-10 text-xs uppercase shadow-xs bg-muted/90 backdrop-blur-sm text-muted-foreground">
+                          <tr>
+                            {headers.map((header) => (
+                              <th
+                                key={header}
+                                className="px-6 py-3 font-medium tracking-wider border-b border-r last:border-r-0 border-border"
+                                title={header}
+                              >
+                                {header}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                          {/* biome-ignore lint/suspicious/noExplicitAny: <Transient types> */}
+                          {previewData.map((originalRow: any, i) => {
+                            // Flatten row for display matching headers
+                            const row = flattenObject(originalRow);
+
+                            return (
+                              <tr key={`row-${i * 2}`} className="transition-colors hover:bg-secondary">
+                                {headers.map((header) => (
+                                  <td
+                                    key={`${i}-${header}`}
+                                    className="px-6 py-3 truncate border-r max-w-75 last:border-r-0 border-border"
+                                    title={String(row[header])}
+                                  >
+                                    {renderCellValue(row[header])}
+                                  </td>
+                                ))}
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                      {activeSheet.data.length > 5 && (
+                        <div className="sticky bottom-0 left-0 right-0 p-3 text-xs font-medium text-center border-t bg-background/95 backdrop-blur-sm text-muted-foreground">
+                          And {activeSheet.data.length - 5} more rows...
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center w-full h-75 text-muted-foreground">
+                      <div className="p-4 mb-4 rounded-full bg-secondary">
+                        <FileSpreadsheet className="w-8 h-8 opacity-40" />
+                      </div>
+                      <p className="font-medium">No data loaded</p>
+                      <p className="text-sm opacity-70">Import JSON to see the preview</p>
                     </div>
                   )}
-
-                  <div className="relative overflow-auto min-h-75 max-h-125 bg-background">
-                    {sheets && activeSheet ? (
-                      <div className="min-w-max">
-                        <table className="w-full text-sm text-left border-collapse">
-                          <thead className="sticky top-0 z-10 text-xs uppercase shadow-xs bg-muted/90 backdrop-blur-sm text-muted-foreground">
-                            <tr>
-                              {headers.map((header) => (
-                                <th
-                                  key={header}
-                                  className="px-6 py-3 font-medium tracking-wider border-b border-r last:border-r-0 border-border"
-                                  title={header}
-                                >
-                                  {header}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-border">
-                            {/* biome-ignore lint/suspicious/noExplicitAny: <Transient types> */}
-                            {previewData.map((originalRow: any, i) => {
-                              // Flatten row for display matching headers
-                              const row = flattenObject(originalRow);
-
-                              return (
-                                <tr key={`row-${i * 2}`} className="transition-colors hover:bg-muted/50">
-                                  {headers.map((header) => (
-                                    <td
-                                      key={`${i}-${header}`}
-                                      className="px-6 py-3 truncate border-r max-w-75 last:border-r-0 border-border"
-                                      title={String(row[header])}
-                                    >
-                                      {renderCellValue(row[header])}
-                                    </td>
-                                  ))}
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                        {activeSheet.data.length > 5 && (
-                          <div className="sticky bottom-0 left-0 right-0 p-3 text-xs font-medium text-center border-t bg-background/95 backdrop-blur-sm text-muted-foreground">
-                            And {activeSheet.data.length - 5} more rows...
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center w-full h-75 text-muted-foreground">
-                        <div className="p-4 mb-4 rounded-full bg-muted/50">
-                          <FileSpreadsheet className="w-8 h-8 opacity-40" />
-                        </div>
-                        <p className="font-medium">No data loaded</p>
-                        <p className="text-sm opacity-70">Import JSON to see the preview</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex flex-col items-end gap-6 p-6 border-t bg-muted/10 sm:flex-row sm:items-center">
-                    <div className="flex-1 w-full space-y-2">
-                      <Label htmlFor="filename">Filename</Label>
-                      <div className="flex items-center max-w-sm gap-2">
-                        <Input
-                          id="filename"
-                          value={fileName}
-                          onChange={(e) => setFileName(e.target.value)}
-                          placeholder="filename"
-                          className="bg-background"
-                        />
-                        <span className="text-sm font-medium text-muted-foreground">.xlsx</span>
-                      </div>
-                    </div>
-                    <Button className="w-full shadow-md sm:w-auto" size="lg" onClick={downloadExcel} disabled={!sheets}>
-                      <Download className="w-4 h-4 mr-2" />
-                      Download Excel
-                    </Button>
-                  </div>
                 </div>
-              </Card>
-            </div>
+
+                {/* Actions */}
+                <div className="flex flex-col items-end gap-6 p-6 border-t bg-muted/10 sm:flex-row sm:items-center">
+                  <div className="flex-1 w-full space-y-2">
+                    <Label htmlFor="filename">Filename</Label>
+                    <div className="flex items-center max-w-sm gap-2">
+                      <Input
+                        id="filename"
+                        value={fileName}
+                        onChange={(e) => setFileName(e.target.value)}
+                        placeholder="filename"
+                        className="bg-background"
+                      />
+                      <span className="text-sm font-medium text-muted-foreground">.xlsx</span>
+                    </div>
+                  </div>
+                  <Button className="w-full shadow-md sm:w-auto" size="lg" onClick={downloadExcel} disabled={!sheets}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Excel
+                  </Button>
+                </div>
+              </div>
+            </Card>
           </div>
         </div>
       </div>

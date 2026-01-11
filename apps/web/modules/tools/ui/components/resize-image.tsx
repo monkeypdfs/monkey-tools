@@ -11,7 +11,6 @@ import { FileUpload } from "@/modules/common/ui/components/file-upload";
 import { Download, RotateCcw, Loader2, AlertTriangle } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@workspace/ui/components/radio-group";
 import { Alert, AlertTitle, AlertDescription } from "@workspace/ui/components/alert";
-import { BackgroundElements } from "@/modules/common/ui/components/background-elements";
 
 interface ResizeOptions {
   width: number;
@@ -219,200 +218,196 @@ export default function ResizeImage() {
   }, [cleanup]);
 
   return (
-    <div className="relative w-full overflow-hidden bg-background text-foreground">
-      <BackgroundElements />
+    <div className="w-full">
+      {/* Upload Section */}
+      <section aria-labelledby="upload-section" className="max-w-3xl mx-auto">
+        {selectedFile === null ? (
+          <FileUpload
+            mode="accumulate"
+            maxFiles={1}
+            onFilesSelected={handleFileSelect}
+            acceptedFileTypes={["image/*"]}
+            label="Upload Image"
+            description="Select an image to resize"
+            disclaimer="Images are processed securely and not stored on our servers"
+          />
+        ) : (
+          <div className="space-y-6">
+            {/* Files Info */}
+            <div className="p-4 border rounded-xl bg-card">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                  <Download className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold">1 image selected</h3>
+                  <p className="text-sm text-muted-foreground">Size: {formatFileSize(selectedFile.size)}</p>
+                </div>
+                <Button variant="outline" size="sm" onClick={resetForm} disabled={isProcessing}>
+                  <RotateCcw className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
 
-      <div className="container relative z-10 px-4 mx-auto">
-        {/* Upload Section */}
-        <section aria-labelledby="upload-section" className="max-w-3xl mx-auto">
-          {selectedFile === null ? (
-            <FileUpload
-              mode="accumulate"
-              maxFiles={1}
-              onFilesSelected={handleFileSelect}
-              acceptedFileTypes={["image/*"]}
-              label="Upload Image"
-              description="Select an image to resize"
-              disclaimer="Images are processed securely and not stored on our servers"
-            />
-          ) : (
-            <div className="space-y-6">
-              {/* Files Info */}
-              <div className="p-4 border rounded-xl bg-card/50 backdrop-blur-sm">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
-                    <Download className="w-4 h-4 text-primary" />
+            {/* Original Dimensions */}
+            {originalDimensions && (
+              <div className="p-4 border rounded-xl bg-card">
+                <h4 className="mb-2 text-sm font-medium text-foreground">Original Dimensions</h4>
+                <p className="text-sm text-muted-foreground">
+                  {originalDimensions.width} × {originalDimensions.height} pixels
+                </p>
+              </div>
+            )}
+
+            {/* Resize Options */}
+            <div className="p-6 border rounded-xl bg-card">
+              <h4 className="mb-4 text-sm font-medium text-foreground">Resize Options</h4>
+
+              {/* Resize Mode */}
+              <div className="mb-6 space-y-3">
+                <Label className="text-sm font-medium text-foreground">Resize Mode</Label>
+                <RadioGroup
+                  value={resizeOptions.resizeMode}
+                  onValueChange={(value: "fit" | "fill" | "stretch") =>
+                    setResizeOptions((prev) => ({ ...prev, resizeMode: value }))
+                  }
+                  className="flex flex-col space-y-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="fit" id="fit" />
+                    <Label htmlFor="fit" className="text-sm text-muted-foreground">
+                      Fit (maintain aspect ratio, fit within dimensions)
+                    </Label>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold">1 image selected</h3>
-                    <p className="text-sm text-muted-foreground">Size: {formatFileSize(selectedFile.size)}</p>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="fill" id="fill" />
+                    <Label htmlFor="fill" className="text-sm text-muted-foreground">
+                      Fill (maintain aspect ratio, fill dimensions)
+                    </Label>
                   </div>
-                  <Button variant="outline" size="sm" onClick={resetForm} disabled={isProcessing}>
-                    <RotateCcw className="w-4 h-4" />
-                  </Button>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="stretch" id="stretch" />
+                    <Label htmlFor="stretch" className="text-sm text-muted-foreground">
+                      Stretch (ignore aspect ratio)
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {/* Dimensions */}
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="space-y-2">
+                  <Label htmlFor="width" className="text-sm font-medium text-foreground">
+                    Width (px)
+                  </Label>
+                  <Input
+                    id="width"
+                    type="number"
+                    min="1"
+                    max="4096"
+                    value={resizeOptions.width}
+                    onChange={(e) => handleDimensionChange("width", parseInt(e.target.value, 10) || 1)}
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="height" className="text-sm font-medium text-foreground">
+                    Height (px)
+                  </Label>
+                  <Input
+                    id="height"
+                    type="number"
+                    min="1"
+                    max="4096"
+                    value={resizeOptions.height}
+                    onChange={(e) => handleDimensionChange("height", parseInt(e.target.value, 10) || 1)}
+                    className="w-full"
+                  />
                 </div>
               </div>
 
-              {/* Original Dimensions */}
-              {originalDimensions && (
-                <div className="p-4 border rounded-xl bg-card/50 backdrop-blur-sm">
-                  <h4 className="mb-2 text-sm font-medium text-foreground">Original Dimensions</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {originalDimensions.width} × {originalDimensions.height} pixels
-                  </p>
+              {/* Maintain Aspect Ratio */}
+              <div className="flex items-center justify-between mb-6">
+                <Label htmlFor="aspect-ratio" className="text-sm font-medium text-foreground">
+                  Maintain Aspect Ratio
+                </Label>
+                <Switch
+                  id="aspect-ratio"
+                  checked={resizeOptions.maintainAspectRatio}
+                  onCheckedChange={(checked) => setResizeOptions((prev) => ({ ...prev, maintainAspectRatio: checked }))}
+                />
+              </div>
+
+              {/* Action Button */}
+              <Button onClick={resizeImage} disabled={!selectedFile || isProcessing} className="w-full">
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Resizing...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-2" />
+                    Resize Image
+                  </>
+                )}
+              </Button>
+
+              {isProcessing && (
+                <div className="mt-4 space-y-2">
+                  <Progress value={progress} className="w-full" />
+                  <p className="text-sm text-center text-muted-foreground">Processing... {progress}%</p>
+                </div>
+              )}
+            </div>
+
+            {/* Image Previews */}
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Original Image */}
+              {previewUrl && (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-foreground">Original Image</h4>
+                  <div className="relative overflow-hidden border-2 rounded-lg aspect-square border-border bg-muted">
+                    {/** biome-ignore lint/performance/noImgElement: <Required image preview here> */}
+                    <img src={previewUrl} alt="Original" className="absolute inset-0 object-contain" />
+                  </div>
                 </div>
               )}
 
-              {/* Resize Options */}
-              <div className="p-6 border rounded-xl bg-card/50 backdrop-blur-sm">
-                <h4 className="mb-4 text-sm font-medium text-foreground">Resize Options</h4>
-
-                {/* Resize Mode */}
-                <div className="mb-6 space-y-3">
-                  <Label className="text-sm font-medium text-foreground">Resize Mode</Label>
-                  <RadioGroup
-                    value={resizeOptions.resizeMode}
-                    onValueChange={(value: "fit" | "fill" | "stretch") =>
-                      setResizeOptions((prev) => ({ ...prev, resizeMode: value }))
-                    }
-                    className="flex flex-col space-y-2"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="fit" id="fit" />
-                      <Label htmlFor="fit" className="text-sm text-muted-foreground">
-                        Fit (maintain aspect ratio, fit within dimensions)
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="fill" id="fill" />
-                      <Label htmlFor="fill" className="text-sm text-muted-foreground">
-                        Fill (maintain aspect ratio, fill dimensions)
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="stretch" id="stretch" />
-                      <Label htmlFor="stretch" className="text-sm text-muted-foreground">
-                        Stretch (ignore aspect ratio)
-                      </Label>
-                    </div>
-                  </RadioGroup>
+              {/* Resized Image */}
+              {resizedUrl && (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-foreground">Resized Image</h4>
+                  <div className="relative overflow-hidden border-2 rounded-lg aspect-square border-border bg-muted">
+                    {/** biome-ignore lint/performance/noImgElement: <Required Image preview here> */}
+                    <img src={resizedUrl} alt="Resized" className="absolute inset-0 object-contain" />
+                  </div>
+                  <Button onClick={handleDownload} className="w-full">
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Resized Image
+                  </Button>
                 </div>
-
-                {/* Dimensions */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="width" className="text-sm font-medium text-foreground">
-                      Width (px)
-                    </Label>
-                    <Input
-                      id="width"
-                      type="number"
-                      min="1"
-                      max="4096"
-                      value={resizeOptions.width}
-                      onChange={(e) => handleDimensionChange("width", parseInt(e.target.value, 10) || 1)}
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="height" className="text-sm font-medium text-foreground">
-                      Height (px)
-                    </Label>
-                    <Input
-                      id="height"
-                      type="number"
-                      min="1"
-                      max="4096"
-                      value={resizeOptions.height}
-                      onChange={(e) => handleDimensionChange("height", parseInt(e.target.value, 10) || 1)}
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-
-                {/* Maintain Aspect Ratio */}
-                <div className="flex items-center justify-between mb-6">
-                  <Label htmlFor="aspect-ratio" className="text-sm font-medium text-foreground">
-                    Maintain Aspect Ratio
-                  </Label>
-                  <Switch
-                    id="aspect-ratio"
-                    checked={resizeOptions.maintainAspectRatio}
-                    onCheckedChange={(checked) => setResizeOptions((prev) => ({ ...prev, maintainAspectRatio: checked }))}
-                  />
-                </div>
-
-                {/* Action Button */}
-                <Button onClick={resizeImage} disabled={!selectedFile || isProcessing} className="w-full">
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Resizing...
-                    </>
-                  ) : (
-                    <>
-                      <Download className="w-4 h-4 mr-2" />
-                      Resize Image
-                    </>
-                  )}
-                </Button>
-
-                {isProcessing && (
-                  <div className="mt-4 space-y-2">
-                    <Progress value={progress} className="w-full" />
-                    <p className="text-sm text-center text-muted-foreground">Processing... {progress}%</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Image Previews */}
-              <div className="grid gap-6 md:grid-cols-2">
-                {/* Original Image */}
-                {previewUrl && (
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-foreground">Original Image</h4>
-                    <div className="relative overflow-hidden border-2 rounded-lg aspect-square border-border bg-muted">
-                      {/** biome-ignore lint/performance/noImgElement: <Required image preview here> */}
-                      <img src={previewUrl} alt="Original" className="absolute inset-0 object-contain" />
-                    </div>
-                  </div>
-                )}
-
-                {/* Resized Image */}
-                {resizedUrl && (
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-foreground">Resized Image</h4>
-                    <div className="relative overflow-hidden border-2 rounded-lg aspect-square border-border bg-muted">
-                      {/** biome-ignore lint/performance/noImgElement: <Required Image preview here> */}
-                      <img src={resizedUrl} alt="Resized" className="absolute inset-0 object-contain" />
-                    </div>
-                    <Button onClick={handleDownload} className="w-full">
-                      <Download className="w-4 h-4 mr-2" />
-                      Download Resized Image
-                    </Button>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
-          )}
-        </section>
-
-        {error && (
-          <div className="max-w-3xl mx-auto mt-6">
-            <Alert>
-              <AlertTriangle className="w-4 h-4" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
           </div>
         )}
+      </section>
 
-        {/* How to Use */}
-        <section className="max-w-3xl mx-auto mt-16"></section>
+      {error && (
+        <div className="max-w-3xl mx-auto mt-6">
+          <Alert>
+            <AlertTriangle className="w-4 h-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </div>
+      )}
 
-        {/* Hidden canvas for processing */}
-        <canvas ref={canvasRef} className="hidden" />
-      </div>
+      {/* How to Use */}
+      <section className="max-w-3xl mx-auto mt-16"></section>
+
+      {/* Hidden canvas for processing */}
+      <canvas ref={canvasRef} className="hidden" />
     </div>
   );
 }

@@ -62,8 +62,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:p-1.5!">
               <Link href="/dashboard" className="flex items-center gap-0.5 cursor-pointer">
                 {/* Placeholder Logo Icon */}
-                <div className="p-0.5 rounded-lg flex items-center justify-center relative w-7 h-7">
-                  <Image src="/monkey-logo.png" alt="Monkey Logo" fill sizes="28px" className="object-contain" />
+                <div className="rounded-lg flex items-center justify-center relative w-12 h-12">
+                  <Image src="/logo.svg" alt="Monkey Logo" fill sizes="35px" className="object-contain" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-xl font-bold leading-none tracking-tight">Monkey</span>
