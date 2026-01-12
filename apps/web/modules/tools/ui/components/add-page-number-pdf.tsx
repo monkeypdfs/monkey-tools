@@ -1,13 +1,13 @@
 "use client";
 
 import { toast } from "sonner";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb, type PDFPage, type PDFFont } from "pdf-lib";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Slider } from "@workspace/ui/components/slider";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
-import { Download, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download, RotateCcw, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
 
@@ -27,10 +27,20 @@ interface PageNumberSettings {
   };
 }
 
-const marginValues = {
+const marginValues: Record<Margin, number> = {
   small: 30,
   recommended: 50,
   large: 80,
+};
+
+// Map accessible outside to avoid recreation
+const fontMap: Record<string, string> = {
+  Helvetica: StandardFonts.Helvetica,
+  "Helvetica-Bold": StandardFonts.HelveticaBold,
+  "Times-Roman": StandardFonts.TimesRoman,
+  "Times-Bold": StandardFonts.TimesRomanBold,
+  Courier: StandardFonts.Courier,
+  "Courier-Bold": StandardFonts.CourierBold,
 };
 
 export default function AddPageNumberPDF() {
@@ -39,6 +49,7 @@ export default function AddPageNumberPDF() {
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const previewUrlRef = useRef<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isUpdatingPreview, setIsUpdatingPreview] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -68,36 +79,26 @@ export default function AddPageNumberPDF() {
     setSettings((prev) => ({ ...prev, ...updates }));
   };
 
-  const addPageNumberToPage = useCallback(
-    async (pdf: PDFDocument, pageIndex: number, actualPageNumber: number) => {
-      const page = pdf.getPage(pageIndex);
+  /**
+   * Pure logic to draw page numbers.
+   * Does NOT embed fonts inside - expects an embedded font object.
+   */
+  const drawPageNumber = useCallback(
+    (page: PDFPage, font: PDFFont, actualPageNumber: number, currentSettings: PageNumberSettings) => {
       const { width, height } = page.getSize();
 
-      // Load font
-      // biome-ignore lint/suspicious/noExplicitAny: <No exact type available>
-      const fontMap: Record<string, any> = {
-        Helvetica: StandardFonts.Helvetica,
-        "Helvetica-Bold": StandardFonts.HelveticaBold,
-        "Times-Roman": StandardFonts.TimesRoman,
-        "Times-Bold": StandardFonts.TimesRomanBold,
-        Courier: StandardFonts.Courier,
-        "Courier-Bold": StandardFonts.CourierBold,
-      };
-
-      const font = await pdf.embedFont(fontMap[settings.fontFamily] || StandardFonts.HelveticaBold);
-
       // Calculate page number to display
-      const displayNumber = settings.firstNumber + (actualPageNumber - settings.pageRange.from);
+      const displayNumber = currentSettings.firstNumber + (actualPageNumber - currentSettings.pageRange.from);
       const pageNumberText = displayNumber.toString();
 
-      const textWidth = font.widthOfTextAtSize(pageNumberText, settings.fontSize);
-      const margin = marginValues[settings.margin];
+      const textWidth = font.widthOfTextAtSize(pageNumberText, currentSettings.fontSize);
+      const margin = marginValues[currentSettings.margin];
 
       // Calculate position
-      let x = width / 2 - textWidth / 2;
-      let y = margin;
+      let x = 0;
+      let y = 0;
 
-      switch (settings.position) {
+      switch (currentSettings.position) {
         case "top-left":
           x = margin;
           y = height - margin;
@@ -128,48 +129,57 @@ export default function AddPageNumberPDF() {
       page.drawText(pageNumberText, {
         x,
         y,
-        size: settings.fontSize,
+        size: currentSettings.fontSize,
         font,
         color: rgb(0, 0, 0),
-        opacity: settings.opacity,
+        opacity: currentSettings.opacity,
       });
     },
-    [settings],
+    [],
   );
 
   const renderPreview = useCallback(async () => {
-    if (!pdfDoc || !canvasRef.current) return;
+    if (!pdfDoc) return;
 
     setIsUpdatingPreview(true);
 
     try {
       // Create a temporary PDF for preview
       const tempPdf = await PDFDocument.create();
+
+      // Copy only the current page (efficient for preview)
       const [copiedPage] = await tempPdf.copyPages(pdfDoc, [currentPage - 1]);
       tempPdf.addPage(copiedPage);
 
       // Only add page number if current page is within the selected range
       if (currentPage >= settings.pageRange.from && currentPage <= settings.pageRange.to) {
-        await addPageNumberToPage(tempPdf, 0, currentPage);
+        // Embed font ONCE for this preview doc
+        const fontName = fontMap[settings.fontFamily] ?? StandardFonts.HelveticaBold;
+        const font = await tempPdf.embedFont(fontName);
+
+        // Use the shared drawing logic
+        drawPageNumber(tempPdf.getPage(0), font, currentPage, settings);
       }
 
-      // Render to canvas
+      // Render to PDF bytes
       const pdfBytes = await tempPdf.save();
       const arrayBuffer = pdfBytes.buffer.slice(pdfBytes.byteOffset, pdfBytes.byteOffset + pdfBytes.byteLength) as ArrayBuffer;
       const blob = new Blob([arrayBuffer], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
 
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
+      // Cleanup old URL and set new one
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
       }
 
+      previewUrlRef.current = url;
       setPreviewUrl(url);
     } catch (error) {
       console.error("Error rendering preview:", error);
     } finally {
       setIsUpdatingPreview(false);
     }
-  }, [pdfDoc, currentPage, settings, previewUrl, addPageNumberToPage]);
+  }, [pdfDoc, currentPage, settings, drawPageNumber]);
 
   // Debounced preview update
   useEffect(() => {
@@ -190,7 +200,7 @@ export default function AddPageNumberPDF() {
     };
   }, [pdfDoc, renderPreview]);
 
-  const truncateFileName = (name: string, maxLength: number = 30) => {
+  const truncateFileName = (name: string, maxLength = 30) => {
     if (name.length <= maxLength) return name;
     const extension = name.split(".").pop();
     const nameWithoutExt = name.substring(0, name.lastIndexOf("."));
@@ -207,11 +217,13 @@ export default function AddPageNumberPDF() {
 
     try {
       const arrayBuffer = await selectedFile.arrayBuffer();
+      // Load PDF
       const pdf = await PDFDocument.load(arrayBuffer);
       const pages = pdf.getPageCount();
 
       setPdfDoc(pdf);
       setTotalPages(pages);
+      // Reset logic
       setCurrentPage(1);
       setFromInput("1");
       setToInput(pages.toString());
@@ -239,11 +251,21 @@ export default function AddPageNumberPDF() {
     setIsProcessing(true);
 
     try {
+      // Clone the document for output
       const pdfDocCopy = await PDFDocument.load(await pdfDoc.save());
 
+      // IMPORTANT: Embed font ONCE for the whole document
+      // This prevents file bloat and corruption issues compared to embedding inside the loop
+      const fontName = fontMap[settings.fontFamily] ?? StandardFonts.HelveticaBold;
+      const font = await pdfDocCopy.embedFont(fontName);
+
       // Add page numbers to pages within range
+      // Convert to 0-indexed loop
       for (let i = settings.pageRange.from - 1; i < settings.pageRange.to; i++) {
-        await addPageNumberToPage(pdfDocCopy, i, i + 1);
+        // Safe check for index bounds
+        if (i >= 0 && i < pdfDocCopy.getPageCount()) {
+          drawPageNumber(pdfDocCopy.getPage(i), font, i + 1, settings);
+        }
       }
 
       const pdfBytes = await pdfDocCopy.save();
@@ -276,10 +298,11 @@ export default function AddPageNumberPDF() {
     setFromInput("1");
     setToInput("1");
     setFirstNumberInput("1");
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
     }
+    setPreviewUrl(null);
     setSettings({
       fontFamily: "Helvetica-Bold",
       fontSize: 12,
@@ -292,13 +315,13 @@ export default function AddPageNumberPDF() {
   };
 
   const goToPreviousPage = () => {
-    if (currentPage > settings.pageRange.from) {
+    if (currentPage > 1) {
       setCurrentPage((prev) => prev - 1);
     }
   };
 
   const goToNextPage = () => {
-    if (currentPage < settings.pageRange.to) {
+    if (currentPage < totalPages) {
       setCurrentPage((prev) => prev + 1);
     }
   };
@@ -319,44 +342,53 @@ export default function AddPageNumberPDF() {
   }
 
   return (
-    <div className="w-full mx-auto mt-5 max-w-7xl">
+    <div className="w-full mx-auto mt-5 duration-500 max-w-7xl animate-in fade-in">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Preview Area */}
         <div className="lg:col-span-2">
-          <div className="p-6 bg-white border rounded-lg shadow-sm">
+          <div className="p-6 border rounded-lg shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">{truncateFileName(file.name)}</span>
-                <span className="text-xs text-gray-500">({totalPages} pages)</span>
+                <span className="text-xs text-muted-foreground">({totalPages} pages)</span>
               </div>
               <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" onClick={goToPreviousPage} disabled={currentPage <= settings.pageRange.from}>
+                <Button size="sm" variant="outline" onClick={goToPreviousPage} disabled={currentPage <= 1}>
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
-                <span className="text-sm">
+                <span className="font-mono text-sm text-center min-w-25">
                   Page {currentPage} of {totalPages}
                 </span>
-                <Button size="sm" variant="outline" onClick={goToNextPage} disabled={currentPage >= settings.pageRange.to}>
+                <Button size="sm" variant="outline" onClick={goToNextPage} disabled={currentPage >= totalPages}>
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
             </div>
 
             {/* PDF Preview */}
-            <div className="relative overflow-hidden bg-gray-100 rounded">
+            <div className="relative flex items-center justify-center overflow-hidden border rounded bg-muted/30 h-150">
               {isUpdatingPreview && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50">
-                  <div className="w-8 h-8 border-b-2 rounded-full animate-spin border-primary"></div>
+                <div className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-sm">
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    <span className="text-xs font-medium text-muted-foreground">Rendering preview...</span>
+                  </div>
                 </div>
               )}
-              {previewUrl && (
+              {previewUrl ? (
                 <iframe
                   key={previewUrl}
                   src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0&view=Fit`}
-                  className="w-full border-0 h-125"
+                  className="w-full h-full border-0"
                   title="PDF Preview"
                 />
+              ) : (
+                <div className="flex flex-col items-center text-muted-foreground">
+                  <Loader2 className="w-8 h-8 mb-2 animate-spin" />
+                  <span>Loading preview...</span>
+                </div>
               )}
+              {/* Hidden canvas ref if needed for advanced rendering later */}
               <canvas ref={canvasRef} className="hidden" />
             </div>
           </div>
@@ -364,207 +396,209 @@ export default function AddPageNumberPDF() {
 
         {/* Settings Sidebar */}
         <div className="space-y-6 lg:col-span-1">
-          <div className="p-6 space-y-6 bg-white border rounded-lg shadow-sm">
-            <h3 className="text-lg font-semibold">Page Number Settings</h3>
+          <div className="flex flex-col h-full p-6 space-y-6 border rounded-lg shadow-sm">
+            <h3 className="flex items-center gap-2 text-lg font-semibold">Settings</h3>
 
-            {/* Position */}
-            <div className="space-y-2">
-              <Label>Position</Label>
-              <div className="grid grid-cols-3 gap-1.5">
-                {(["top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"] as Position[]).map(
-                  (pos) => (
-                    <button
-                      type="button"
-                      key={pos}
-                      onClick={() => updateSettings({ position: pos })}
-                      className={`h-10 rounded border-2 ${
-                        settings.position === pos ? "bg-primary border-primary" : "bg-white border-gray-300 hover:border-gray-400"
-                      }`}
-                      title={pos.replace("-", " ")}
+            <div className="flex-1 space-y-6">
+              {/* Position */}
+              <div className="space-y-3">
+                <Label className="text-xs tracking-wider uppercase text-muted-foreground">Position</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(["top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"] as Position[]).map(
+                    (pos) => (
+                      <button
+                        type="button"
+                        key={pos}
+                        onClick={() => updateSettings({ position: pos })}
+                        className={`h-12 rounded-md border-2 transition-all ${
+                          settings.position === pos
+                            ? "bg-primary/10 border-primary shadow-sm"
+                            : "bg-background border-border hover:border-muted-foreground/50"
+                        }`}
+                        title={pos.replace("-", " ")}
+                        aria-label={`Set position to ${pos.replace("-", " ")}`}
+                      >
+                        <div className={`w-full h-full p-2 relative`}>
+                          <div
+                            className={`absolute w-2 h-2 rounded-full ${settings.position === pos ? "bg-primary" : "bg-muted-foreground/30"} 
+                                    ${pos.includes("top") ? "top-1" : "bottom-1"}
+                                    ${pos.includes("left") ? "left-1" : pos.includes("right") ? "right-1" : "left-1/2 -ml-1"}
+                                `}
+                          />
+                        </div>
+                      </button>
+                    ),
+                  )}
+                </div>
+              </div>
+
+              {/* Font Settings Group */}
+              <div className="space-y-4">
+                <Label className="text-xs tracking-wider uppercase text-muted-foreground">Typography</Label>
+
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Family</Label>
+                    <Select value={settings.fontFamily} onValueChange={(value) => updateSettings({ fontFamily: value })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Helvetica">Helvetica</SelectItem>
+                        <SelectItem value="Helvetica-Bold">Helvetica Bold</SelectItem>
+                        <SelectItem value="Times-Roman">Times Roman</SelectItem>
+                        <SelectItem value="Times-Bold">Times Bold</SelectItem>
+                        <SelectItem value="Courier">Courier</SelectItem>
+                        <SelectItem value="Courier-Bold">Courier Bold</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Margin</Label>
+                    <Select value={settings.margin} onValueChange={(value: Margin) => updateSettings({ margin: value })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="small">Small</SelectItem>
+                        <SelectItem value="recommended">Recommended</SelectItem>
+                        <SelectItem value="large">Large</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Font Size & Opacity - Compact */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <Label className="text-xs">Size</Label>
+                      <span className="text-xs text-muted-foreground">{settings.fontSize}px</span>
+                    </div>
+                    <Slider
+                      min={8}
+                      max={72}
+                      step={1}
+                      value={[settings.fontSize]}
+                      onValueChange={(value) => updateSettings({ fontSize: value[0] })}
+                      className="py-1"
                     />
-                  ),
-                )}
-              </div>
-            </div>
-
-            {/* First Number */}
-            <div className="space-y-2">
-              <Label>First Number</Label>
-              <Input
-                type="text"
-                inputMode="numeric"
-                value={firstNumberInput}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  // Only allow numbers
-                  if (value === "" || /^\d+$/.test(value)) {
-                    setFirstNumberInput(value);
-                    const numValue = parseInt(value, 10);
-                    if (!Number.isNaN(numValue) && numValue >= 1) {
-                      updateSettings({ firstNumber: numValue });
-                    }
-                  }
-                }}
-                onBlur={() => {
-                  const numValue = parseInt(firstNumberInput, 10);
-                  if (Number.isNaN(numValue) || numValue < 1) {
-                    setFirstNumberInput("1");
-                    updateSettings({ firstNumber: 1 });
-                  } else {
-                    setFirstNumberInput(numValue.toString());
-                    updateSettings({ firstNumber: numValue });
-                  }
-                }}
-              />
-            </div>
-
-            {/* Font Family and Margin */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Font Family</Label>
-                <Select value={settings.fontFamily} onValueChange={(value) => updateSettings({ fontFamily: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Helvetica">Helvetica</SelectItem>
-                    <SelectItem value="Helvetica-Bold">Helvetica Bold</SelectItem>
-                    <SelectItem value="Times-Roman">Times Roman</SelectItem>
-                    <SelectItem value="Times-Bold">Times Bold</SelectItem>
-                    <SelectItem value="Courier">Courier</SelectItem>
-                    <SelectItem value="Courier-Bold">Courier Bold</SelectItem>
-                  </SelectContent>
-                </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <Label className="text-xs">Opacity</Label>
+                      <span className="text-xs text-muted-foreground">{Math.round(settings.opacity * 100)}%</span>
+                    </div>
+                    <Slider
+                      min={0}
+                      max={1}
+                      step={0.1}
+                      value={[settings.opacity]}
+                      onValueChange={(value) => updateSettings({ opacity: value[0] })}
+                      className="py-1"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Margin</Label>
-                <Select value={settings.margin} onValueChange={(value: Margin) => updateSettings({ margin: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="small">Small</SelectItem>
-                    <SelectItem value="recommended">Recommended</SelectItem>
-                    <SelectItem value="large">Large</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+              {/* Numbering Logic */}
+              <div className="pt-2 space-y-4 border-t">
+                <Label className="text-xs tracking-wider uppercase text-muted-foreground">Numbering</Label>
 
-            {/* Font Size */}
-            <div className="space-y-2">
-              <Label>Font Size: {settings.fontSize}px</Label>
-              <Slider
-                min={8}
-                max={72}
-                step={1}
-                value={[settings.fontSize]}
-                onValueChange={(value) => updateSettings({ fontSize: value[0] })}
-              />
-            </div>
-
-            {/* Opacity */}
-            <div className="space-y-2">
-              <Label>Opacity: {Math.round(settings.opacity * 100)}%</Label>
-              <Slider
-                min={0}
-                max={1}
-                step={0.01}
-                value={[settings.opacity]}
-                onValueChange={(value) => updateSettings({ opacity: value[0] })}
-              />
-            </div>
-
-            {/* Page Range */}
-            <div className="space-y-2">
-              <Label>Pages</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label className="text-xs text-gray-600">From</Label>
+                <div className="space-y-2">
+                  <Label className="text-xs">Start sequence from</Label>
                   <Input
                     type="text"
                     inputMode="numeric"
-                    value={fromInput}
+                    value={firstNumberInput}
                     onChange={(e) => {
                       const value = e.target.value;
-                      // Only allow numbers
                       if (value === "" || /^\d+$/.test(value)) {
-                        setFromInput(value);
-                        const numValue = parseInt(value, 10);
-                        if (!Number.isNaN(numValue) && numValue >= 1 && numValue <= totalPages) {
-                          updateSettings({ pageRange: { ...settings.pageRange, from: numValue } });
-                        }
+                        setFirstNumberInput(value);
+                        const num = parseInt(value, 10);
+                        if (!Number.isNaN(num) && num >= 1) updateSettings({ firstNumber: num });
                       }
                     }}
                     onBlur={() => {
-                      const numValue = parseInt(fromInput, 10);
-                      if (Number.isNaN(numValue) || numValue < 1) {
-                        setFromInput("1");
-                        updateSettings({ pageRange: { ...settings.pageRange, from: 1 } });
-                        if (currentPage < 1) setCurrentPage(1);
-                      } else if (numValue > settings.pageRange.to) {
-                        setFromInput(settings.pageRange.to.toString());
-                        updateSettings({ pageRange: { ...settings.pageRange, from: settings.pageRange.to } });
-                        if (currentPage < settings.pageRange.to) setCurrentPage(settings.pageRange.to);
-                      } else {
-                        setFromInput(numValue.toString());
-                        updateSettings({ pageRange: { ...settings.pageRange, from: numValue } });
-                        if (currentPage < numValue) setCurrentPage(numValue);
+                      const num = parseInt(firstNumberInput, 10);
+                      if (Number.isNaN(num) || num < 1) {
+                        setFirstNumberInput("1");
+                        updateSettings({ firstNumber: 1 });
                       }
                     }}
                   />
+                  <p className="text-[10px] text-muted-foreground">
+                    If set to 5, the first page will be numbered "5", next "6", etc.
+                  </p>
                 </div>
-                <div>
-                  <Label className="text-xs text-gray-600">To</Label>
-                  <Input
-                    type="text"
-                    inputMode="numeric"
-                    value={toInput}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      // Only allow numbers
-                      if (value === "" || /^\d+$/.test(value)) {
-                        setToInput(value);
-                        const numValue = parseInt(value, 10);
-                        if (!Number.isNaN(numValue) && numValue >= 1 && numValue <= totalPages) {
-                          updateSettings({ pageRange: { ...settings.pageRange, to: numValue } });
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Apply From Page</Label>
+                    <Input
+                      value={fromInput}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "" || /^\d+$/.test(val)) {
+                          setFromInput(val);
+                          const n = parseInt(val, 10);
+                          if (!Number.isNaN(n) && n >= 1 && n <= totalPages)
+                            updateSettings({ pageRange: { ...settings.pageRange, from: n } });
                         }
-                      }
-                    }}
-                    onBlur={() => {
-                      const numValue = parseInt(toInput, 10);
-                      if (Number.isNaN(numValue) || numValue > totalPages) {
-                        setToInput(totalPages.toString());
-                        updateSettings({ pageRange: { ...settings.pageRange, to: totalPages } });
-                        if (currentPage > totalPages) setCurrentPage(totalPages);
-                      } else if (numValue < settings.pageRange.from) {
-                        setToInput(settings.pageRange.from.toString());
-                        updateSettings({ pageRange: { ...settings.pageRange, to: settings.pageRange.from } });
-                        if (currentPage > settings.pageRange.from) setCurrentPage(settings.pageRange.from);
-                      } else {
-                        setToInput(numValue.toString());
-                        updateSettings({ pageRange: { ...settings.pageRange, to: numValue } });
-                        if (currentPage > numValue) setCurrentPage(numValue);
-                      }
-                    }}
-                  />
+                      }}
+                      onBlur={() => {
+                        let n = parseInt(fromInput, 10);
+                        if (Number.isNaN(n) || n < 1) n = 1;
+                        if (n > settings.pageRange.to) n = settings.pageRange.to;
+                        setFromInput(n.toString());
+                        updateSettings({ pageRange: { ...settings.pageRange, from: n } });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">To Page</Label>
+                    <Input
+                      value={toInput}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "" || /^\d+$/.test(val)) {
+                          setToInput(val);
+                          const n = parseInt(val, 10);
+                          if (!Number.isNaN(n) && n >= 1 && n <= totalPages)
+                            updateSettings({ pageRange: { ...settings.pageRange, to: n } });
+                        }
+                      }}
+                      onBlur={() => {
+                        let n = parseInt(toInput, 10);
+                        if (Number.isNaN(n) || n > totalPages) n = totalPages;
+                        if (n < settings.pageRange.from) n = settings.pageRange.from;
+                        setToInput(n.toString());
+                        updateSettings({ pageRange: { ...settings.pageRange, to: n } });
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
-              <p className="text-xs text-gray-500">
-                Page numbers will apply to pages {settings.pageRange.from}-{settings.pageRange.to}
-              </p>
             </div>
 
             {/* Actions */}
-            <div className="pt-4 space-y-2 border-t">
-              <Button onClick={handleDownload} disabled={isProcessing} className="w-full">
-                <Download className="w-4 h-4 mr-2" />
-                Download PDF
+            <div className="pt-4 space-y-3 border-t">
+              <Button size={"sm"} onClick={handleDownload} disabled={isProcessing} className="w-full text-sm shadow-md h-11">
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    Download Numbered PDF
+                  </>
+                )}
               </Button>
-              <Button onClick={resetAll} variant="outline" className="w-full">
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Start Over
+              <Button onClick={resetAll} variant="ghost" className="w-full text-muted-foreground">
+                <RotateCcw className="w-4 h-4" />
+                Reset & Upload New File
               </Button>
             </div>
           </div>

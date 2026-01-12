@@ -16,7 +16,7 @@ export const NewHeroSection = () => {
           The best free tools for you to use safely: we delete your files as soon as you finish using the tools. You benefit
           because it's safe.
         </p>
-        <div className="flex flex-col justify-center gap-4 mb-8 sm:flex-row">
+        <div className="flex flex-row justify-center gap-4 mb-8">
           <Link href="#tools">
             <Button size="lg" className="font-semibold bg-primary text-primary-foreground hover:bg-primary/90">
               <Gamepad2 className="w-5 h-5 mr-2" />

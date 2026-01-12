@@ -10,80 +10,97 @@ import { Card } from "@workspace/ui/components/card";
 import { Switch } from "@workspace/ui/components/switch";
 import { Copy, RefreshCw, CheckCircle2, XCircle, ShieldCheck } from "lucide-react";
 
-function generateCPF(formatted = true): string {
-  // Generate first 9 random digits
-  const base = Array.from({ length: 9 }, () => Math.floor(Math.random() * 10));
+// Common utility functions
+const calcDigit = (nums: number[], weights: number[]): number => {
+  const sum = nums.reduce((acc, num, i) => acc + num * (weights[i] ?? 0), 0);
+  const mod = sum % 11;
+  return mod < 2 ? 0 : 11 - mod;
+};
 
-  // Calculate first check digit
-  const d1 = 11 - (base.reduce((sum, num, i) => sum + num * (10 - i), 0) % 11);
-  base.push(d1 >= 10 ? 0 : d1);
+const formatCNPJ = (cnpj: string): string => {
+  return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+};
 
-  // Calculate second check digit
-  const d2 = 11 - (base.reduce((sum, num, i) => sum + num * (11 - i), 0) % 11);
-  base.push(d2 >= 10 ? 0 : d2);
+const cleanCNPJ = (cnpj: string): string => {
+  return cnpj.replace(/\D/g, "");
+};
 
-  const cpf = base.join("");
+function generateCNPJ(formatted = true, branch = "0001"): string {
+  if (!/^\d{4}$/.test(branch)) {
+    throw new Error("Branch must be a 4-digit string");
+  }
 
-  if (!formatted) return cpf;
+  // Generate first 8 random digits
+  const base = Array.from({ length: 8 }, () => Math.floor(Math.random() * 10));
 
-  return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+  // Add branch (usually 0001)
+  const numbers = [...base, ...branch.split("").map(Number)];
+
+  // Weights for check digits
+  const weight1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  const weight2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+
+  // First check digit
+  const d1 = calcDigit(numbers, weight1);
+  numbers.push(d1);
+
+  // Second check digit
+  const d2 = calcDigit(numbers, weight2);
+  numbers.push(d2);
+
+  const cnpj = numbers.join("");
+
+  return formatted ? formatCNPJ(cnpj) : cnpj;
 }
 
-function validateCPF(cpf: string): boolean {
-  const cleaned = cpf.replace(/\D/g, "");
-  if (cleaned.length !== 11) return false;
+function validateCNPJ(cnpj: string): boolean {
+  const cleaned = cleanCNPJ(cnpj);
 
-  // Check for all same digits (e.g. 111.111.111-11) which are invalid
+  if (cleaned.length !== 14) return false;
+  // Check for all same digits
   if (/^(\d)\1+$/.test(cleaned)) return false;
 
-  const calc = (len: number) =>
-    11 -
-    (cleaned
-      .slice(0, len)
-      .split("")
-      .reduce((sum, d, i) => sum + Number(d) * (len + 1 - i), 0) %
-      11);
+  const nums = cleaned.split("").map(Number);
 
-  const d1 = calc(9);
-  const d2 = calc(10);
+  const weight1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  const weight2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
 
-  return Number(cleaned[9]) === (d1 >= 10 ? 0 : d1) && Number(cleaned[10]) === (d2 >= 10 ? 0 : d2);
+  const d1 = calcDigit(nums.slice(0, 12), weight1);
+  const d2 = calcDigit(nums.slice(0, 13), weight2);
+
+  return nums[12] === d1 && nums[13] === d2;
 }
 
-export default function CpfGenerator() {
-  const [generatedCpf, setGeneratedCpf] = useState("");
+export default function CnpjGenerator() {
+  const [generatedCnpj, setGeneratedCnpj] = useState("");
   const [formatted, setFormatted] = useState(true);
-  const [validationCpf, setValidationCpf] = useState("");
+  const [validationCnpj, setValidationCnpj] = useState("");
 
   const handleGenerate = () => {
-    const cpf = generateCPF(formatted);
-    setGeneratedCpf(cpf);
+    const cnpj = generateCNPJ(formatted);
+    setGeneratedCnpj(cnpj);
   };
 
   const handleCopy = async () => {
-    if (!generatedCpf) return;
+    if (!generatedCnpj) return;
     try {
-      await navigator.clipboard.writeText(generatedCpf);
-      toast.success("CPF copied to clipboard");
+      await navigator.clipboard.writeText(generatedCnpj);
+      toast.success("CNPJ copied to clipboard");
     } catch {
-      toast.error("Failed to copy CPF");
+      toast.error("Failed to copy CNPJ");
     }
   };
 
   const updateFormat = (checked: boolean) => {
     setFormatted(checked);
     // Regenerate or re-format if existing
-    if (generatedCpf) {
-      const raw = generatedCpf.replace(/\D/g, "");
-      if (checked) {
-        setGeneratedCpf(raw.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"));
-      } else {
-        setGeneratedCpf(raw);
-      }
+    if (generatedCnpj) {
+      const raw = cleanCNPJ(generatedCnpj);
+      setGeneratedCnpj(checked ? formatCNPJ(raw) : raw);
     }
   };
 
-  const isValid = validationCpf ? validateCPF(validationCpf) : null;
+  const isValid = validationCnpj ? validateCNPJ(validationCnpj) : null;
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
@@ -97,18 +114,18 @@ export default function CpfGenerator() {
             </h2>
             <div className="flex items-center space-x-2">
               <Label htmlFor="format-mode" className="text-sm text-muted-foreground whitespace-nowrap">
-                Format (XXX.XXX.XXX-XX)
+                Format (XX.XXX.XXX/0001-XX)
               </Label>
               <Switch id="format-mode" checked={formatted} onCheckedChange={updateFormat} />
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">Generate valid CPF numbers for testing purposes.</p>
+          <p className="text-sm text-muted-foreground">Generate valid CNPJ numbers for testing purposes.</p>
         </div>
 
         <div className="flex flex-col gap-4 sm:flex-row">
           <div className="relative flex-1">
-            <Input value={generatedCpf} readOnly placeholder="Click generate" className="pr-12 font-mono text-lg" />
-            {generatedCpf && (
+            <Input value={generatedCnpj} readOnly placeholder="Click generate" className="pr-12 font-mono text-lg" />
+            {generatedCnpj && (
               <Button size="icon" variant="ghost" className="absolute w-8 h-8 right-1 top-1" onClick={handleCopy}>
                 <Copy className="w-4 h-4" />
               </Button>
@@ -116,7 +133,7 @@ export default function CpfGenerator() {
           </div>
           <Button onClick={handleGenerate} className="min-w-35">
             <RefreshCw className="w-4 h-4 mr-2" />
-            Generate CPF
+            Generate CNPJ
           </Button>
         </div>
 
@@ -131,22 +148,22 @@ export default function CpfGenerator() {
       <Card className="p-6 space-y-6">
         <div className="space-y-2">
           <h2 className="text-xl font-bold">Validator</h2>
-          <p className="text-sm text-muted-foreground">Check if a CPF number is valid according to the official algorithm.</p>
+          <p className="text-sm text-muted-foreground">Check if a CNPJ number is valid according to the official algorithm.</p>
         </div>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="cpf-validate">Enter CPF</Label>
+            <Label htmlFor="cnpj-validate">Enter CNPJ</Label>
             <Input
-              id="cpf-validate"
-              value={validationCpf}
-              onChange={(e) => setValidationCpf(e.target.value)}
-              placeholder="000.000.000-00 or 00000000000"
+              id="cnpj-validate"
+              value={validationCnpj}
+              onChange={(e) => setValidationCnpj(e.target.value)}
+              placeholder="00.000.000/0000-00 or 00000000000000"
               className="font-mono"
             />
           </div>
 
-          {validationCpf && (
+          {validationCnpj && (
             <div
               className={cn(
                 "flex items-center gap-2 p-3 rounded-md border",
@@ -158,12 +175,12 @@ export default function CpfGenerator() {
               {isValid ? (
                 <>
                   <CheckCircle2 className="w-5 h-5" />
-                  <span className="font-medium">Valid CPF</span>
+                  <span className="font-medium">Valid CNPJ</span>
                 </>
               ) : (
                 <>
                   <XCircle className="w-5 h-5" />
-                  <span className="font-medium">Invalid CPF</span>
+                  <span className="font-medium">Invalid CNPJ</span>
                 </>
               )}
             </div>
