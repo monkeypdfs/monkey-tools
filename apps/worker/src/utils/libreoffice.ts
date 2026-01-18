@@ -33,3 +33,35 @@ export async function convertToPdf(inputPath: string, outputDir: string): Promis
     });
   });
 }
+
+export async function convertToWord(inputPath: string, outputDir: string): Promise<string> {
+  // Security: Ensure input path is absolute and exists
+  // The execute function itself doesn't need to check too much if the worker is isolated,
+  // but it's good practice.
+
+  // We expect inputPath like /tmp/123-input.pdf
+  // soffice --headless --convert-to docx --outdir /tmp /tmp/123-input.pdf
+
+  return new Promise((resolve, reject) => {
+    // 60 second timeout for PDF to Word (can be heavier)
+    const timeout = 60000;
+
+    // Command: soffice --headless --infilter="writer_pdf_import" --convert-to docx --outdir <outputDir> <inputPath>
+    const args = ["--headless", "--infilter=writer_pdf_import", "--convert-to", "docx", "--outdir", outputDir, inputPath];
+
+    execFile("soffice", args, { timeout }, (error) => {
+      if (error) {
+        // Check for timeout
+        if (error instanceof Error && "signal" in error && error.signal === "SIGTERM") {
+          return reject(new Error("Conversion timed out"));
+        }
+        return reject(error);
+      }
+
+      // LibreOffice usually names the output file same as input but with .docx extension
+      const filename = path.basename(inputPath, path.extname(inputPath));
+      const expectedOutputPath = path.join(outputDir, `${filename}.docx`);
+      resolve(expectedOutputPath);
+    });
+  });
+}

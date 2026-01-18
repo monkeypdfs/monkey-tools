@@ -34,8 +34,8 @@ export const NewHeroSection = ({ heroSection }: NewHeroSectionProps) => {
     <section className="relative py-20 overflow-hidden md:py-32 bg-background">
       {/* Background gradient effects */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-secondary/10 rounded-full blur-3xl" />
+        <div className="absolute top-0 rounded-full left-1/4 w-96 h-96 bg-primary/10 blur-3xl" />
+        <div className="absolute bottom-0 rounded-full right-1/4 w-80 h-80 bg-secondary/10 blur-3xl" />
       </div>
 
       <div className="container relative z-10 px-4 mx-auto text-center">
@@ -49,9 +49,9 @@ export const NewHeroSection = ({ heroSection }: NewHeroSectionProps) => {
           <Link href={content.primaryButtonLink}>
             <Button
               size="lg"
-              className="rounded-xl btn-gradient-secondary text-secondary-foreground font-semibold text-base px-8 py-6 h-auto"
+              className="h-auto px-8 py-6 text-base font-semibold rounded-xl btn-gradient-secondary text-secondary-foreground"
             >
-              <Gamepad2 className="w-5 h-5 mr-2" />
+              <Gamepad2 className="w-5 h-5" />
               {content.primaryButtonText}
             </Button>
           </Link>
@@ -59,7 +59,7 @@ export const NewHeroSection = ({ heroSection }: NewHeroSectionProps) => {
             <Button
               size="lg"
               variant="outline"
-              className="rounded-xl border-border hover:bg-card text-foreground font-medium text-base px-8 py-6 h-auto"
+              className="h-auto px-8 py-6 text-base font-medium rounded-xl border-border hover:bg-card text-foreground"
             >
               {content.secondaryButtonText}
             </Button>
