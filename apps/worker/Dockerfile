@@ -41,7 +41,7 @@ RUN pnpm deploy --filter=worker --prod --legacy /deploy
 
 FROM node:${NODE_VERSION}-bookworm-slim AS runner
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ghostscript ca-certificates \
+ && apt-get install -y --no-install-recommends ghostscript libreoffice ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production
 WORKDIR /app

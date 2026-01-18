@@ -1,211 +1,182 @@
 "use client";
 
 import { toast } from "sonner";
-import { useState, useCallback } from "react";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { JOB_TYPES } from "@workspace/types";
 import { Button } from "@workspace/ui/components/button";
 import { Progress } from "@workspace/ui/components/progress";
-import { Download, FileText, AlertTriangle } from "lucide-react";
+import { useFileUpload } from "@/modules/common/hooks/use-file-upload";
+import { useCreateJob } from "@/modules/dashboard/hooks/use-create-job";
+import { useJob } from "@/modules/dashboard/hooks/use-job";
 import { FileUpload } from "@/modules/common/ui/components/file-upload";
-import { Alert, AlertTitle, AlertDescription } from "@workspace/ui/components/alert";
-
-interface UploadedFile {
-  file: File;
-  id: string;
-}
-
-interface ConversionResult {
-  blob: Blob;
-  fileName: string;
-  wordCount: number;
-}
+import { Loader2, Download, RefreshCw, CheckCircle, FileType } from "lucide-react";
 
 export default function WordToPDF() {
-  const [files, setFiles] = useState<UploadedFile[]>([]);
-  const [isConverting, setIsConverting] = useState(false);
-  const [conversionProgress, setConversionProgress] = useState(0);
-  const [conversionResult, setConversionResult] = useState<ConversionResult | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [fileKey, setFileKey] = useState<string | null>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
 
-  // Handle file selection
-  const handleFilesSelected = useCallback(async (newFiles: File[]) => {
-    if (newFiles.length === 0) return;
+  const { uploadFile, uploadProgress } = useFileUpload();
+  const createJobMutation = useCreateJob();
+  const { data: jobData, isLoading: isJobLoading } = useJob(jobId);
 
-    // Convert to our format
-    const uploadedFiles: UploadedFile[] = newFiles.map((file) => ({
-      file,
-      id: `${file.name}-${Date.now()}-${Math.random()}`,
-    }));
-
-    setFiles(uploadedFiles);
-    setConversionResult(null); // Reset any previous results
-  }, []);
-
-  // Convert Word to PDF
-  const convertToPdf = async () => {
-    setIsConverting(true);
+  // Derive status from job data
+  const getStatus = () => {
+    if (!file && !fileKey) return "idle";
+    if (uploadProgress < 100) return "uploading";
+    if (uploadProgress === 100 && !jobId) return "uploaded";
+    if (jobData?.status === "COMPLETED") return "completed";
+    if (jobData?.status === "FAILED") return "failed";
+    if (jobId && (isJobLoading || jobData?.status === "IN_PROGRESS")) return "processing";
+    return "idle";
   };
 
-  // Download PDF
-  const downloadPdf = useCallback(() => {
-    if (!conversionResult) return;
+  const status = getStatus();
 
-    const url = URL.createObjectURL(conversionResult.blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = conversionResult.fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleFilesSelected = async (files: File[]) => {
+    if (files.length === 0) return;
+    const selectedFile = files[0];
+    if (!selectedFile) return;
 
-    toast.success("PDF downloaded!");
-  }, [conversionResult]);
+    // Reset state for new file
+    setFile(selectedFile);
+    setFileKey(null);
+    setJobId(null);
 
-  // Reset everything
-  const reset = useCallback(() => {
-    setFiles([]);
-    setConversionResult(null);
-    setConversionProgress(0);
-  }, []);
+    try {
+      const { fileKey } = await uploadFile(selectedFile);
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
+      setFileKey(fileKey);
+      toast.success("File uploaded successfully");
+    } catch (error) {
+      console.error("Upload failed:", error);
+      toast.error("Failed to upload file");
+      setFile(null);
+      setFileKey(null);
+    }
+  };
+
+  const handleConvert = async () => {
+    if (!fileKey) return;
+
+    try {
+      const result = await createJobMutation.mutateAsync({
+        tool: JOB_TYPES.WORD_TO_PDF,
+        inputFile: fileKey,
+        metadata: {},
+      });
+      setJobId(result.jobId);
+    } catch (error) {
+      console.error("Job creation failed:", error);
+      toast.error("Failed to start conversion");
+    }
+  };
+
+  // Handle job completion notifications
+  useEffect(() => {
+    if (jobData?.status === "COMPLETED") {
+      toast.success("Conversion completed!");
+    } else if (jobData?.status === "FAILED") {
+      toast.error("Conversion failed");
+    }
+  }, [jobData?.status]);
+
+  const handleReset = () => {
+    setFile(null);
+    setFileKey(null);
+    setJobId(null);
   };
 
   return (
     <div className="w-full">
-      {/* Maintenance Mode Banner */}
-      <div className="w-full py-3 font-semibold text-center text-yellow-900 bg-yellow-500">
-        🚧 Word to PDF Converter is currently under maintenance 🚧
-      </div>
+      {status === "idle" && (
+        <FileUpload
+          onFilesSelected={handleFilesSelected}
+          acceptedFileTypes={["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword"]}
+          maxFiles={1}
+          maxFileSize={50}
+          label="Drop your Word file here"
+          description="Supports DOC and DOCX up to 50MB"
+        />
+      )}
 
-      {/* Upload Section */}
-      <section aria-labelledby="upload-section" className="max-w-3xl mx-auto">
-        {files.length === 0 ? (
-          <FileUpload
-            mode="accumulate"
-            maxFiles={5}
-            onFilesSelected={handleFilesSelected}
-            acceptedFileTypes={["application/vnd.openxmlformats-officedocument.wordprocessingml.document"]}
-            label="Upload Word Documents"
-            description="Select Word (.docx) files to convert to PDF"
-            disclaimer="Documents are processed securely and not stored on our servers"
-            disabled={true}
-          />
-        ) : (
-          <div className="space-y-6">
-            {/* Files Info */}
-            <div className="p-4 border rounded-xl bg-card">
-              <div className="flex items-center gap-3">
-                <FileText className="w-8 h-8 text-primary" />
-                <div className="flex-1">
-                  <h3 className="font-semibold">
-                    {files.length} document{files.length !== 1 ? "s" : ""} selected
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Total size: {formatFileSize(files.reduce((sum, f) => sum + f.file.size, 0))}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Convert Button */}
-            <div className="flex flex-row gap-4">
-              <Button
-                onClick={convertToPdf}
-                disabled={true}
-                size="lg"
-                className="flex-1 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all opacity-50 cursor-not-allowed"
-              >
-                <FileText className="w-4 h-4 mr-2" />
-                Under Maintenance
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={reset}
-                disabled={true}
-                size="lg"
-                className="flex-1 opacity-50 cursor-not-allowed"
-              >
-                Reset
-              </Button>
-            </div>
-
-            {/* Conversion Result */}
-            {conversionResult && (
-              <div className="space-y-4">
-                <div className="p-6 border-2 border-green-300 shadow-lg rounded-xl bg-linear-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20 dark:border-green-700">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-green-500 rounded-full">
-                      <FileText className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-bold text-green-800 dark:text-green-200">Conversion Complete!</h4>
-                      <p className="text-sm text-green-700 dark:text-green-300">Your PDF is ready for download</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2">
-                    <div className="p-3 text-center rounded-lg bg-white/50 dark:bg-black/20">
-                      <p className="text-2xl font-bold text-green-600">{conversionResult.wordCount}</p>
-                      <p className="text-sm text-muted-foreground">Words Converted</p>
-                    </div>
-                    <div className="p-3 text-center rounded-lg bg-white/50 dark:bg-black/20">
-                      <p className="text-2xl font-bold text-green-600">{formatFileSize(conversionResult.blob.size)}</p>
-                      <p className="text-sm text-muted-foreground">File Size</p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <Button
-                      onClick={downloadPdf}
-                      disabled={true}
-                      size="lg"
-                      className="flex-1 text-white transition-all bg-green-600 shadow-md opacity-50 cursor-not-allowed hover:bg-green-700 hover:shadow-lg"
-                    >
-                      <Download className="w-5 h-5 mr-2" />
-                      Under Maintenance
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={reset}
-                      disabled={true}
-                      size="lg"
-                      className="flex-1 opacity-50 cursor-not-allowed"
-                    >
-                      Reset
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
+      {status === "uploading" && (
+        <div className="space-y-4 text-center">
+          <div className="flex items-center justify-center p-4 rounded-full bg-primary/10 mx-auto w-fit">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
-        )}
-      </section>
-
-      {/* Progress Bar */}
-      {isConverting && (
-        <div className="max-w-3xl mx-auto mt-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Converting documents to PDF...</span>
-            <span className="text-sm text-muted-foreground">{Math.round(conversionProgress)}%</span>
-          </div>
-          <Progress value={conversionProgress} className="w-full h-2" />
+          <h3 className="text-xl font-semibold">Uploading...</h3>
+          <Progress value={uploadProgress} className="h-2" />
+          <p className="text-sm text-muted-foreground">{uploadProgress}% uploaded</p>
         </div>
       )}
 
-      {/* Warning */}
-      <Alert className="max-w-3xl mx-auto mt-2 text-orange-800 border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800 dark:text-orange-200">
-        <AlertTriangle className="w-4 h-4 text-orange-600" />
-        <AlertTitle>Service Unavailable</AlertTitle>
-        <AlertDescription className="text-orange-700 dark:text-orange-300">
-          The Word to PDF converter is currently under maintenance. Please check back later for updates.
-        </AlertDescription>
-      </Alert>
+      {status === "uploaded" && file && (
+        <div className="space-y-6">
+          <div className="flex items-center max-w-full p-4 space-x-4 border rounded-lg border-border bg-primary">
+            <FileType className="w-8 h-8 shrink-0" />
+            <div className="flex-1 min-w-0 text-left">
+              <p className="font-medium truncate">{file.name}</p>
+              <p className="text-sm text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">
+            <Button variant="outline" onClick={handleReset} className="flex-1">
+              Cancel
+            </Button>
+            <Button onClick={handleConvert} className="flex-1">
+              Convert to PDF
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {status === "processing" && (
+        <div className="space-y-4 text-center">
+          <div className="flex items-center justify-center p-4 rounded-full bg-primary/10 mx-auto w-fit">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+          <h3 className="text-xl font-semibold">Converting...</h3>
+          <p className="text-sm text-muted-foreground">This may take a few moments</p>
+        </div>
+      )}
+
+      {status === "completed" && jobData?.downloadUrl && (
+        <div className="space-y-6 text-center">
+          <div className="flex items-center justify-center p-4 rounded-full bg-primary/10 mx-auto w-fit">
+            <CheckCircle className="w-8 h-8 text-primary" />
+          </div>
+          <h3 className="text-xl font-semibold">Conversion Complete!</h3>
+
+          <div className="flex flex-row justify-center space-x-3">
+            <Button asChild className="w-fit" size={"lg"}>
+              <Link href={jobData.downloadUrl} download="converted.pdf" rel="noopener noreferrer">
+                <Download className="w-4 h-4" />
+                Download PDF
+              </Link>
+            </Button>
+            <Button size={"lg"} variant="outline" onClick={handleReset} className="w-fit">
+              <RefreshCw className="w-4 h-4" />
+              Convert Another File
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {status === "failed" && (
+        <div className="space-y-6 text-center">
+          <div className="flex items-center justify-center p-4 rounded-full bg-destructive/10 mx-auto w-fit">
+            <RefreshCw className="w-8 h-8 text-destructive" />
+          </div>
+          <h3 className="text-xl font-semibold text-destructive">Something went wrong</h3>
+          <p className="text-sm text-muted-foreground">Failed to process your file. Please try again.</p>
+          <Button onClick={handleReset} className="w-full">
+            Try Again
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
