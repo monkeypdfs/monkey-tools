@@ -40,7 +40,11 @@ export const jobsRouter = createTRPCRouter({
     }
     let downloadUrl = "";
     if (job.outputFile) {
-      downloadUrl = await getDownloadUrl(job.outputFile);
+      // Pass original filename if available in metadata, or fallback to sensible default
+      const metadata = job.metadata as Record<string, unknown>;
+      const originalName = typeof metadata?.originalName === "string" ? metadata.originalName : "converted";
+      const filename = `${originalName.replace(/\.[^/.]+$/, "")}.docx`;
+      downloadUrl = await getDownloadUrl(job.outputFile, filename);
     }
     return { ...job, _id: job._id.toString(), downloadUrl };
   }),

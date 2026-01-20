@@ -64,7 +64,9 @@ export default function PdfToWord() {
       const result = await createJobMutation.mutateAsync({
         tool: JOB_TYPES.PDF_TO_WORD,
         inputFile: fileKey,
-        metadata: {},
+        metadata: {
+          originalName: file?.name,
+        },
       });
       setJobId(result.jobId);
     } catch (error) {
