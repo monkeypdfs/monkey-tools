@@ -46,8 +46,31 @@ export async function downloadFile(key: string, localPath: string) {
   await pipeline(response.Body as NodeJS.ReadableStream, createWriteStream(localPath));
 }
 
-export const uploadFromFile = async (localPath: string, key: string, contentType = "application/pdf") => {
+function getContentTypeFromKey(key: string): string {
+  const ext = key.split(".").pop()?.toLowerCase();
+  const mimeTypes: Record<string, string> = {
+    pdf: "application/pdf",
+    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    doc: "application/msword",
+    xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    xls: "application/vnd.ms-excel",
+    pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    ppt: "application/vnd.ms-powerpoint",
+    png: "image/png",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    gif: "image/gif",
+    webp: "image/webp",
+    txt: "text/plain",
+    json: "application/json",
+    zip: "application/zip",
+  };
+  return mimeTypes[ext || ""] || "application/octet-stream";
+}
+
+export const uploadFromFile = async (localPath: string, key: string, contentType?: string) => {
   const fileStream = createReadStream(localPath);
+  const resolvedContentType = contentType || getContentTypeFromKey(key);
 
   const upload = new Upload({
     client: s3,
@@ -55,7 +78,7 @@ export const uploadFromFile = async (localPath: string, key: string, contentType
       Bucket: BUCKET_NAME,
       Key: key,
       Body: fileStream,
-      ContentType: contentType,
+      ContentType: resolvedContentType,
     },
   });
 

@@ -28,7 +28,13 @@ export async function pdfToWord(job: Job) {
     await job.updateProgress(30);
     console.log(`[${job.id}] Converting with LibreOffice...`);
 
-    resultPath = await convertToWord(inputPath, outputDir);
+    try {
+      resultPath = await convertToWord(inputPath, outputDir);
+      console.log(`[${job.id}] Conversion completed, output: ${resultPath}`);
+    } catch (conversionError) {
+      console.error(`[${job.id}] Conversion error:`, conversionError);
+      throw conversionError;
+    }
 
     // Verify result exists
     try {
