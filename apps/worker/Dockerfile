@@ -45,6 +45,7 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends ghostscript libreoffice libreoffice-java-common default-jre ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production
+ENV JAVA_HOME=/usr/lib/jvm/default-java
 WORKDIR /app
 # Copy the deployed worker with all its dependencies
 COPY --from=deploy /deploy .

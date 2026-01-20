@@ -46,8 +46,18 @@ export async function convertToWord(inputPath: string, outputDir: string): Promi
     // 5 minutes timeout for PDF to Word (can be heavier)
     const timeout = 300000;
 
-    // Command: soffice --headless --infilter="writer_pdf_import" --convert-to docx --outdir <outputDir> <inputPath>
-    const args = ["--headless", "--infilter=writer_pdf_import", "--convert-to", "docx", "--outdir", outputDir, inputPath];
+    // Command: soffice -env:UserInstallation=file:///tmp/LibreOffice_Conversion_${unique_id} --headless --infilter="writer_pdf_import" --convert-to docx --outdir <outputDir> <inputPath>
+    const userProfileDir = `/tmp/LibreOffice_Conversion_${path.basename(inputPath)}`;
+    const args = [
+      `-env:UserInstallation=file://${userProfileDir}`,
+      "--headless",
+      "--infilter=writer_pdf_import",
+      "--convert-to",
+      "docx",
+      "--outdir",
+      outputDir,
+      inputPath,
+    ];
 
     execFile("soffice", args, { timeout }, (error) => {
       if (error) {

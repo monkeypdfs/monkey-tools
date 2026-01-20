@@ -1,17 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@workspace/ui/components/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card";
-import { Badge } from "@workspace/ui/components/badge";
 import { Pencil, Trash2 } from "lucide-react";
-import { useDeleteCustomPage } from "../../hooks/use-delete-custom-page";
-
-enum PageType {
-  HOMEPAGE = "homepage",
-  ALL_TOOLS = "all-tools",
-  CUSTOM = "custom",
-}
+import { PageType } from "@workspace/types";
+import { Badge } from "@workspace/ui/components/badge";
+import { Button } from "@workspace/ui/components/button";
+import { useDeleteCustomPage } from "@/modules/dashboard/hooks/use-delete-custom-page";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card";
 
 interface Page {
   _id: string;

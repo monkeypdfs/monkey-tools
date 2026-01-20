@@ -79,7 +79,7 @@ const deleteCustomPageSchema = z.object({
 export const pagesRouter = createTRPCRouter({
   // Public procedures (Frontend)
   getBySlug: baseProcedure.input(getBySlugSchema).query(async ({ input }) => {
-    const page = await PageModel.findOne({ slug: input.slug, isActive: true });
+    const page = await PageModel.findOne({ slug: input.slug, isActive: true }).lean();
 
     if (!page) {
       throw new TRPCError({
@@ -95,7 +95,7 @@ export const pagesRouter = createTRPCRouter({
   }),
 
   getHomepage: baseProcedure.query(async () => {
-    const page = await PageModel.findOne({ pageType: PageType.HOMEPAGE });
+    const page = await PageModel.findOne({ pageType: PageType.HOMEPAGE }).lean();
 
     if (!page) {
       throw new TRPCError({
@@ -111,7 +111,7 @@ export const pagesRouter = createTRPCRouter({
   }),
 
   getAllToolsPage: baseProcedure.query(async () => {
-    const page = await PageModel.findOne({ pageType: PageType.ALL_TOOLS });
+    const page = await PageModel.findOne({ pageType: PageType.ALL_TOOLS }).lean();
 
     if (!page) {
       throw new TRPCError({
@@ -131,7 +131,9 @@ export const pagesRouter = createTRPCRouter({
       pageType: PageType.CUSTOM,
       showInFooter: true,
       isActive: true,
-    }).sort({ footerOrder: 1 });
+    })
+      .sort({ footerOrder: 1 })
+      .lean();
 
     return pages.map((page) => ({
       ...page,
@@ -141,7 +143,7 @@ export const pagesRouter = createTRPCRouter({
 
   // Protected procedures (Dashboard)
   getAll: protectedProcedure.query(async () => {
-    const pages = await PageModel.find().sort({ pageType: 1, footerOrder: 1 });
+    const pages = await PageModel.find({}).sort({ pageType: 1, footerOrder: 1 }).lean();
     return pages.map((page) => ({
       ...page,
       _id: page._id.toString(),
@@ -149,7 +151,7 @@ export const pagesRouter = createTRPCRouter({
   }),
 
   getById: protectedProcedure.input(getByIdSchema).query(async ({ input }) => {
-    const page = await PageModel.findById(input.id);
+    const page = await PageModel.findById(input.id).lean();
 
     if (!page) {
       throw new TRPCError({
@@ -175,8 +177,15 @@ export const pagesRouter = createTRPCRouter({
         howItWorksSection: input.howItWorksSection,
         isActive: input.isActive,
       },
-      { new: true, upsert: true },
+      { new: true, upsert: true, lean: true },
     );
+
+    if (!page) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to update homepage",
+      });
+    }
 
     return {
       ...page,
@@ -195,8 +204,15 @@ export const pagesRouter = createTRPCRouter({
         shortDescription: input.shortDescription,
         isActive: input.isActive,
       },
-      { new: true, upsert: true },
+      { new: true, upsert: true, lean: true },
     );
+
+    if (!page) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to update all tools page",
+      });
+    }
 
     return {
       ...page,
@@ -228,9 +244,10 @@ export const pagesRouter = createTRPCRouter({
       isActive: input.isActive,
     });
 
+    const pageObj = page.toObject();
     return {
-      ...page,
-      _id: page._id.toString(),
+      ...pageObj,
+      _id: pageObj._id.toString(),
     };
   }),
 
@@ -275,9 +292,10 @@ export const pagesRouter = createTRPCRouter({
 
     await page.save();
 
+    const pageObj = page.toObject();
     return {
-      ...page,
-      _id: page._id.toString(),
+      ...pageObj,
+      _id: pageObj._id.toString(),
     };
   }),
 
