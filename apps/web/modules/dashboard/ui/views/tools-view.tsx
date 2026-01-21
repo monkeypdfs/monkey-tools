@@ -3,8 +3,7 @@
 import { Wrench } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { Category, Tool } from "@workspace/database";
-import type { IconName } from "lucide-react/dynamic";
-import { DynamicIcon } from "@/modules/common/ui/components/dynamic-icon";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { useRemoveTool } from "@/modules/dashboard/hooks/use-remove-tool";
 import { useSuspenseTools } from "@/modules/dashboard/hooks/use-suspense-tools";
 import { EmptyView, EntityItem, EntityList } from "@/modules/common/ui/components/entity-components";
@@ -48,7 +47,11 @@ export const ToolItem = ({ data }: { data: Tool }) => {
       subtitle={categoryName}
       image={
         <div className="flex items-center justify-center size-8">
-          {data.icon ? <DynamicIcon name={data.icon as IconName} className="size-5" /> : <Wrench className="size-5" />}
+          {data.icon ? (
+            <DynamicIcon name={data.icon as IconName} className="size-5" fallback={() => <Wrench className="size-5" />} />
+          ) : (
+            <Wrench className="size-5" />
+          )}
         </div>
       }
       onRemove={handleRemove}

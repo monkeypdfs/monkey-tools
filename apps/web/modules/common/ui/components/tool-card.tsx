@@ -1,7 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { FileText } from "lucide-react";
-import * as LucideIcons from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Button } from "@workspace/ui/components/button";
 
 interface ToolCardProps {
@@ -15,25 +16,6 @@ interface ToolCardProps {
   bgColor?: string;
 }
 
-// Type-safe helper function to get icon by name
-const getIconComponent = (iconName?: string): LucideIcon => {
-  if (!iconName) return FileText;
-
-  // Use a type-safe approach to access Lucide icons
-  const icons = LucideIcons as unknown as Record<string, LucideIcon>;
-
-  // Try the icon name as-is first
-  let IconComponent = icons[iconName];
-
-  if (!IconComponent) {
-    // Capitalize first letter (e.g., "repeat" -> "Repeat")
-    const capitalized = iconName.charAt(0).toUpperCase() + iconName.slice(1);
-    IconComponent = icons[capitalized];
-  }
-
-  return IconComponent || FileText;
-};
-
 // Category-specific icon colors
 const categoryIconColors: Record<string, string> = {
   "pdf-tools": "#ef4444", // red-500
@@ -44,7 +26,6 @@ const categoryIconColors: Record<string, string> = {
 };
 
 export const ToolCard = ({ name, description, category, categorySlug, toolSlug, icon }: ToolCardProps) => {
-  const IconComponent = getIconComponent(icon);
   const categoryColor = categoryIconColors[categorySlug] || "#635BFF";
 
   return (
@@ -53,7 +34,12 @@ export const ToolCard = ({ name, description, category, categorySlug, toolSlug, 
         {/* Icon and Category Badge */}
         <div className="flex items-center justify-between mb-4">
           <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
-            <IconComponent className="w-6 h-6" style={{ color: categoryColor }} />
+            <DynamicIcon
+              name={icon as IconName}
+              className="w-6 h-6"
+              style={{ color: categoryColor }}
+              fallback={() => <FileText className="w-6 h-6" style={{ color: categoryColor }} />}
+            />
           </div>
           <span className="text-xs font-medium tracking-wide uppercase px-3 py-1 rounded-full bg-muted text-muted-foreground">
             {category}

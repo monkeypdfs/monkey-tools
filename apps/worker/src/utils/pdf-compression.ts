@@ -1,24 +1,48 @@
-import { spawn } from "node:child_process";
-import fs from "node:fs/promises";
 import path from "node:path";
+import fs from "node:fs/promises";
 import { randomUUID } from "node:crypto";
+import { spawn } from "node:child_process";
 
 export type CompressionPreset = "low" | "medium" | "high";
 
 export class AdvancedPdfCompressor {
   private async runCommand(command: string, args: string[]): Promise<void> {
-    console.log(`[Compression] Executing: ${command} ${args.join(" ")}`); // Log command for debugging
+    console.log(`[Compression] Executing: ${command} ${args.join(" ")}`);
     return new Promise((resolve, reject) => {
       const proc = spawn(command, args);
       const stderr: Buffer[] = [];
 
-      // IMPORTANT: Consume stdout to prevent process blocking if buffer fills
-      proc.stdout.on("data", () => {});
+      // Stream stdout to console to show progress (GS outputs pages to stdout sometimes)
+      proc.stdout.on("data", (data) => {
+        const str = data.toString();
+        // Log only if it looks like progress info to avoid flooding logs
+        if (str.includes("Page")) {
+          console.log(`[Compression] ${command}: ${str.trim()}`);
+        }
+      });
 
-      proc.stderr.on("data", (data) => stderr.push(data));
+      proc.stderr.on("data", (data) => {
+        stderr.push(data);
+        // Also log stderr if it looks like progress (GS often uses stderr for progress)
+        const str = data.toString();
+        if (str.includes("Page")) {
+          console.log(`[Compression] ${command}: ${str.trim()}`);
+        }
+      });
 
-      proc.on("error", (err) => reject(err));
+      // 5 Minute timeout
+      const timeout = setTimeout(() => {
+        proc.kill();
+        reject(new Error(`Command timed out after 300s: ${command}`));
+      }, 300000);
+
+      proc.on("error", (err) => {
+        clearTimeout(timeout);
+        reject(err);
+      });
+
       proc.on("close", (code) => {
+        clearTimeout(timeout);
         if (code === 0) resolve();
         else reject(new Error(`${command} failed with code ${code}: ${Buffer.concat(stderr).toString()}`));
       });
@@ -52,7 +76,6 @@ export class AdvancedPdfCompressor {
       "-dEmbedAllFonts=false", // Aggressive font optimization
       "-dSubsetFonts=true",
       "-dCompressFonts=true",
-      "-dUseCIEColor=true", // Added for better color space handling
       "-dAutoRotatePages=/None",
       `-sOutputFile=${outputPath}`,
       inputPath,
@@ -83,7 +106,6 @@ export class AdvancedPdfCompressor {
       "-dColorImageFilter=/DCTEncode",
       "-dGrayImageFilter=/DCTEncode",
       "-dJPEGQ=20", // Aggressive JPEG compression (Industry Standard for Extreme)
-      "-dUseCIEColor=true", // Optimize color space
 
       // Force aggressive downsampling again (in case Step 1 was too gentle)
       "-dDownsampleColorImages=true",

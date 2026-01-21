@@ -1,5 +1,7 @@
-import * as LucideIcons from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+"use client";
+
+import { Upload } from "lucide-react";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 
 interface HowItWorksStep {
   iconName: string;
@@ -17,14 +19,6 @@ interface HowItWorksSection {
 interface HowItWorksProps {
   howItWorksSection?: HowItWorksSection;
 }
-
-// Type-safe helper function to get icon by name
-const getIconComponent = (iconName: string): LucideIcon => {
-  // Use a type-safe approach to access Lucide icons
-  const icons = LucideIcons as unknown as Record<string, LucideIcon>;
-  const IconComponent = icons[iconName];
-  return IconComponent ?? LucideIcons.Upload; // Fallback to Upload icon if not found
-};
 
 export const HowItWorks = ({ howItWorksSection }: HowItWorksProps) => {
   // Fallback to default content if not provided
@@ -67,13 +61,16 @@ export const HowItWorks = ({ howItWorksSection }: HowItWorksProps) => {
         </div>
         <div className="grid grid-cols-1 gap-12 md:grid-cols-3 max-w-5xl mx-auto">
           {sortedSteps.map((step, index) => {
-            const IconComponent = getIconComponent(step.iconName);
             return (
               <div key={step.title} className="text-center">
                 <div className="relative inline-flex items-center justify-center mb-6">
                   {/* Icon Container */}
                   <div className="w-20 h-20 rounded-2xl bg-muted flex items-center justify-center">
-                    <IconComponent className="w-10 h-10 text-primary" />
+                    <DynamicIcon
+                      name={step.iconName as IconName}
+                      className="w-10 h-10 text-primary"
+                      fallback={() => <Upload className="w-10 h-10 text-primary" />}
+                    />
                   </div>
                   {/* Number Badge */}
                   <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-secondary text-background flex items-center justify-center font-bold text-sm">

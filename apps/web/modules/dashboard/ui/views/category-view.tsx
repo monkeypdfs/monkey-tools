@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { IconName } from "lucide-react/dynamic";
 import { Button } from "@workspace/ui/components/button";
-import { ArrowLeft, Edit, Eye, EyeOff, Hash, Type } from "lucide-react";
-import { DynamicIcon } from "@/modules/common/ui/components/dynamic-icon";
+import { ArrowLeft, Edit, Eye, EyeOff, Hash, Type, FileText } from "lucide-react";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import type { CategoryFormValues } from "@/modules/dashboard/schema/category";
 import { CategoryForm } from "@/modules/dashboard/ui/components/category-form";
 import { useUpdateCategory } from "@/modules/dashboard/hooks/use-update-category";
@@ -93,7 +92,11 @@ export const CategoryView = ({ id }: CategoryViewProps) => {
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                    <DynamicIcon name={categoryData.icon as IconName} className="w-8 h-8" />
+                    <DynamicIcon
+                      name={categoryData.icon as IconName}
+                      className="w-8 h-8"
+                      fallback={() => <FileText className="w-8 h-8" />}
+                    />
                   </div>
                   <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-4xl lg:text-6xl">
                     {categoryData.name}

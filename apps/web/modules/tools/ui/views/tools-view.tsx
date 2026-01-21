@@ -23,6 +23,7 @@ export const ToolsView = ({ toolCategory }: ToolsViewProps) => {
           <ToolCard
             key={tool.title}
             name={tool.title}
+            icon={tool.icon}
             description={tool.description}
             category={category.name}
             categorySlug={category.slug}

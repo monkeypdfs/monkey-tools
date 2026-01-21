@@ -1,7 +1,7 @@
 "use client";
 
-import type { IconName } from "lucide-react/dynamic";
-import { DynamicIcon } from "@/modules/common/ui/components/dynamic-icon";
+import { FileText } from "lucide-react";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 
 interface VisualStep {
   icon: string;
@@ -19,7 +19,14 @@ export const ToolSteps = ({ steps }: ToolStepsProps) => {
   if (!steps || steps.length === 0) return null;
 
   const renderIcon = (iconName: string, iconColor: string) => {
-    return <DynamicIcon name={iconName as IconName} className="w-12 h-12" style={{ color: iconColor }} />;
+    return (
+      <DynamicIcon
+        name={iconName as IconName}
+        className="w-12 h-12"
+        style={{ color: iconColor }}
+        fallback={() => <FileText className="w-12 h-12" style={{ color: iconColor }} />}
+      />
+    );
   };
 
   return (
