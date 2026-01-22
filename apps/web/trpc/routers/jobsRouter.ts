@@ -3,7 +3,7 @@ import { Status } from "@workspace/types";
 import { myQueue } from "@workspace/queue";
 import { JobModel } from "@workspace/database";
 import { getDownloadUrl } from "@workspace/storage";
-import { createTRPCRouter, protectedProcedure } from "../init";
+import { baseProcedure, createTRPCRouter } from "../init";
 
 const createJobSchema = z.object({
   tool: z.string().min(1, {
@@ -16,7 +16,7 @@ const createJobSchema = z.object({
 });
 
 export const jobsRouter = createTRPCRouter({
-  create: protectedProcedure.input(createJobSchema).mutation(async ({ input }) => {
+  create: baseProcedure.input(createJobSchema).mutation(async ({ input }) => {
     const job = await JobModel.create({
       tool: input.tool,
       status: Status.IN_PROGRESS,
@@ -33,7 +33,7 @@ export const jobsRouter = createTRPCRouter({
 
     return { jobId: job.id, status: job.status };
   }),
-  getById: protectedProcedure.input(z.object({ jobId: z.string().min(1) })).query(async ({ input }) => {
+  getById: baseProcedure.input(z.object({ jobId: z.string().min(1) })).query(async ({ input }) => {
     const job = await JobModel.findById(input.jobId).lean();
     if (!job) {
       throw new Error("Job not found");

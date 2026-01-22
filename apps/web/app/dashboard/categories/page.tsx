@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { HydrateClient } from "@/trpc/server";
 import type { SearchParams } from "nuqs/server";
+import { requireAuth } from "@/lib/auth-utils";
 import { ErrorBoundary } from "react-error-boundary";
 import { prefetchCategories } from "@/modules/common/prefetch";
 import { CategoriesView } from "@/modules/dashboard/ui/views/categories-view";
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export default async function CategoriesPage({ searchParams }: Props) {
+  await requireAuth();
   const params = await categoriesParamsLoader(searchParams);
   prefetchCategories(params);
   return (

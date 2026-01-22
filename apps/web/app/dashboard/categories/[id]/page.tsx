@@ -4,6 +4,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { prefetchCategory } from "@/modules/common/prefetch";
 import { CategoryView } from "@/modules/dashboard/ui/views/category-view";
 import { SuspenseLoader } from "@/modules/common/ui/components/suspense-loader";
+import { requireAuth } from "@/lib/auth-utils";
 
 interface CategoryPageProps {
   params: Promise<{
@@ -11,6 +12,7 @@ interface CategoryPageProps {
   }>;
 }
 export default async function CategoryPage({ params }: CategoryPageProps) {
+  await requireAuth();
   const { id } = await params;
   prefetchCategory(id);
   return (

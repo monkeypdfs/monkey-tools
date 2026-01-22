@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { HydrateClient } from "@/trpc/server";
+import { requireAuth } from "@/lib/auth-utils";
 import { ErrorBoundary } from "react-error-boundary";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { prefetchPages } from "@/modules/common/prefetch";
@@ -17,6 +18,7 @@ const PageSkeleton = () => {
 };
 
 export default async function PagesPage() {
+  await requireAuth();
   prefetchPages();
   return (
     <HydrateClient>

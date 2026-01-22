@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { HydrateClient } from "@/trpc/server";
+import { requireAuth } from "@/lib/auth-utils";
 import { ErrorBoundary } from "react-error-boundary";
 import { prefetchTool } from "@/modules/common/prefetch";
 import { ToolView } from "@/modules/dashboard/ui/views/tool-view";
@@ -10,7 +11,9 @@ interface ToolPageProps {
     id: string;
   }>;
 }
+
 export default async function ToolPage({ params }: ToolPageProps) {
+  await requireAuth();
   const { id } = await params;
   prefetchTool(id);
   return (

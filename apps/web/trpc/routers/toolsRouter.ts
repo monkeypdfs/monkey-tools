@@ -1,7 +1,7 @@
 import z from "zod";
 import { TRPCError } from "@trpc/server";
 import { PAGINATION } from "@/modules/common/constants";
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { baseProcedure, createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { createToolSchema } from "@/modules/dashboard/schema/tool";
 import { type Category, mongoose, type Tool, ToolModel } from "@workspace/database";
 
@@ -44,7 +44,7 @@ export const toolsRouter = createTRPCRouter({
     }
   }),
 
-  getMany: protectedProcedure
+  getMany: baseProcedure
     .input(
       z.object({
         page: z.number().default(PAGINATION.DEFAULT_PAGE),
@@ -53,15 +53,18 @@ export const toolsRouter = createTRPCRouter({
         categoryId: z.string().optional(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { page, pageSize, search, categoryId } = input;
       const searchRegex = new RegExp(search, "i");
 
       // Build match conditions for aggregation and count
       const baseMatch: mongoose.AnyObject = {
-        isActive: true,
         title: { $regex: searchRegex },
       };
+
+      if (!ctx.session) {
+        baseMatch.isActive = true;
+      }
 
       const aggregationMatch: mongoose.AnyObject = { ...baseMatch };
       const countMatch: mongoose.AnyObject = { ...baseMatch };

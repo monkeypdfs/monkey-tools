@@ -2,7 +2,7 @@ import z from "zod";
 import { TRPCError } from "@trpc/server";
 import { CategoryModel, ToolModel } from "@workspace/database";
 import { PAGINATION } from "@/modules/common/constants";
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { baseProcedure, createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { createCategorySchema } from "@/modules/dashboard/schema/category";
 
 export const categoriesRouter = createTRPCRouter({
@@ -29,7 +29,7 @@ export const categoriesRouter = createTRPCRouter({
     }
   }),
 
-  getMany: protectedProcedure
+  getMany: baseProcedure
     .input(
       z.object({
         page: z.number().default(PAGINATION.DEFAULT_PAGE),
@@ -37,18 +37,21 @@ export const categoriesRouter = createTRPCRouter({
         search: z.string().default(""),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { page, pageSize, search } = input;
       const searchRegex = new RegExp(search, "i");
 
       // Use aggregation pipeline for better performance - single query with join
+      const isActiveFilter = ctx.session ? {} : { isActive: true };
+      const matchStage = {
+        name: { $regex: searchRegex },
+        ...isActiveFilter,
+      };
+
       const [items, totalCount] = await Promise.all([
         CategoryModel.aggregate([
           {
-            $match: {
-              isActive: true,
-              name: { $regex: searchRegex },
-            },
+            $match: matchStage,
           },
           {
             $lookup: {
@@ -72,10 +75,7 @@ export const categoriesRouter = createTRPCRouter({
           { $skip: (page - 1) * pageSize },
           { $limit: pageSize },
         ]),
-        CategoryModel.countDocuments({
-          isActive: true,
-          name: { $regex: searchRegex },
-        }),
+        CategoryModel.countDocuments(matchStage),
       ]);
 
       const totalPages = Math.ceil(totalCount / pageSize);
@@ -119,7 +119,7 @@ export const categoriesRouter = createTRPCRouter({
     }
   }),
 
-  getCategoryWithTools: protectedProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
+  getCategoryWithTools: baseProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
     const category = await CategoryModel.findOne({ slug: input.slug }).lean();
     if (!category) {
       throw new TRPCError({
