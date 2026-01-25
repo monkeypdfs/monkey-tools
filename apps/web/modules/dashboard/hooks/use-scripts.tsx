@@ -1,7 +1,7 @@
 import { toast } from "sonner";
 import { useTRPC } from "@/trpc/client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const useCreateGlobalScript = () => {
   const trpc = useTRPC();
@@ -39,8 +39,8 @@ export const useUpdateGlobalScript = () => {
 
 export const useDeleteGlobalScript = () => {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   return useMutation(
     trpc.globalScripts.delete.mutationOptions({

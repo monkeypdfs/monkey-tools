@@ -8,6 +8,7 @@ export const ScriptsHeader = () => {
   const handleCreate = () => {
     router.push("/dashboard/scripts/create");
   };
+  
   return (
     <EntityHeader
       title="Global Scripts"

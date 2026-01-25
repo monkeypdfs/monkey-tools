@@ -8,7 +8,9 @@
     "DO_SPACES_REGION",
     "DO_SPACES_ACCESS_KEY",
     "DO_SPACES_SECRET_KEY",
-    "DO_SPACES_BUCKET"
+    "DO_SPACES_BUCKET",
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL"
   ],
   "tasks": {
     "build": {
