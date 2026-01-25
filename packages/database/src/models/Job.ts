@@ -10,6 +10,7 @@ import { prop, getModelForClass, modelOptions, Severity } from "@typegoose/typeg
   },
   options: {
     allowMixed: Severity.ALLOW,
+    customName: "Job",
   },
 })
 export class Job {
@@ -35,4 +36,8 @@ export class Job {
   public completedAt?: Date;
 }
 
-export const JobModel = (mongoose.models.Job as ReturnType<typeof getModelForClass<typeof Job>>) || getModelForClass(Job);
+function getJobModel() {
+  return (mongoose.models.Job as ReturnType<typeof getModelForClass<typeof Job>>) ?? getModelForClass(Job);
+}
+
+export const JobModel = getJobModel();

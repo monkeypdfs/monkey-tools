@@ -10,6 +10,7 @@ import { getModelForClass, prop, modelOptions, Severity } from "@typegoose/typeg
   },
   options: {
     allowMixed: Severity.ALLOW,
+    customName: "Page",
   },
 })
 export class Page {
@@ -85,9 +86,13 @@ export class Page {
   public updatedAt?: Date;
 }
 
-export const PageModel = (mongoose.models.Page as ReturnType<typeof getModelForClass<typeof Page>>) || getModelForClass(Page);
+function getPageModel() {
+  const model = (mongoose.models.Page as ReturnType<typeof getModelForClass<typeof Page>>) ?? getModelForClass(Page);
 
-// Create compound index for pageType + slug uniqueness
-if (!mongoose.models.Page) {
-  PageModel.collection.createIndex({ pageType: 1, slug: 1 }, { unique: true });
+  return model;
 }
+
+export const PageModel = getPageModel();
+
+// Create compound index for pageType + slug uniqueness - handle this in schema definition instead
+// The index should be defined in the @modelOptions or through a migration

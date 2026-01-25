@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import mongoose from "mongoose";
 import { prop, getModelForClass, modelOptions, Severity } from "@typegoose/typegoose";
 
 @modelOptions({
@@ -8,6 +9,7 @@ import { prop, getModelForClass, modelOptions, Severity } from "@typegoose/typeg
   },
   options: {
     allowMixed: Severity.ALLOW,
+    customName: "GlobalScript",
   },
 })
 export class GlobalScript {
@@ -26,4 +28,10 @@ export class GlobalScript {
   public isActive!: boolean;
 }
 
-export const GlobalScriptModel = getModelForClass(GlobalScript);
+function getGlobalScriptModel() {
+  return (
+    (mongoose.models.GlobalScript as ReturnType<typeof getModelForClass<typeof GlobalScript>>) ?? getModelForClass(GlobalScript)
+  );
+}
+
+export const GlobalScriptModel = getGlobalScriptModel();

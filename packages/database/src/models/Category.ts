@@ -9,6 +9,7 @@ import { prop, getModelForClass, modelOptions, Severity } from "@typegoose/typeg
   },
   options: {
     allowMixed: Severity.ALLOW,
+    customName: "Category",
   },
 })
 export class Category {
@@ -33,5 +34,8 @@ export class Category {
   public color!: string;
 }
 
-export const CategoryModel =
-  (mongoose.models.Category as ReturnType<typeof getModelForClass<typeof Category>>) || getModelForClass(Category);
+function getCategoryModel() {
+  return (mongoose.models.Category as ReturnType<typeof getModelForClass<typeof Category>>) ?? getModelForClass(Category);
+}
+
+export const CategoryModel = getCategoryModel();

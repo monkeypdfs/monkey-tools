@@ -10,6 +10,7 @@ import { prop, getModelForClass, modelOptions, Severity, type Ref } from "@typeg
   },
   options: {
     allowMixed: Severity.ALLOW,
+    customName: "Tool",
   },
 })
 export class Tool {
@@ -92,4 +93,8 @@ export class Tool {
   public updatedAt?: Date;
 }
 
-export const ToolModel = (mongoose.models.Tool as ReturnType<typeof getModelForClass<typeof Tool>>) || getModelForClass(Tool);
+function getToolModel() {
+  return (mongoose.models.Tool as ReturnType<typeof getModelForClass<typeof Tool>>) ?? getModelForClass(Tool);
+}
+
+export const ToolModel = getToolModel();
