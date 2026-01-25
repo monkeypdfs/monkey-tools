@@ -45,6 +45,7 @@
     "client-only": "^0.0.1",
     "date-fns": "^4.1.0",
     "heic2any": "^0.0.4",
+    "html-react-parser": "^5.2.12",
     "jspdf": "^3.0.4",
     "jszip": "^3.10.1",
     "lucide-react": "^0.475.0",

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { NavUser } from "@/modules/dashboard/ui/components/nav-user";
 import { NavMain } from "@/modules/dashboard/ui/components/nav-main";
 import { NavSecondary } from "@/modules/dashboard/ui/components/nav-secondary";
-import { LayoutDashboard, Search, Settings, Wrench, Tag, FileText } from "lucide-react";
+import { LayoutDashboard, Search, Settings, Wrench, Tag, FileText, Code } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -37,6 +37,11 @@ const data = {
       title: "Pages",
       url: "/dashboard/pages",
       icon: FileText,
+    },
+    {
+      title: "Scripts",
+      url: "/dashboard/scripts",
+      icon: Code,
     },
   ],
   navSecondary: [

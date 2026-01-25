@@ -10,10 +10,10 @@ import { AlertTriangleIcon, Loader2Icon, MoreVerticalIcon, PackageOpenIcon, Plus
 type EntityHeaderProps = {
   title: string;
   description?: string;
-  newButtonLabel: string;
+  newButtonLabel?: string;
   disabled?: boolean;
   isCreating?: boolean;
-} & ({ onNew: () => void; newButtonHref?: never } | { newButtonHref: string; onNew?: never });
+} & ({ onNew: () => void; newButtonHref?: never } | { newButtonHref?: string; onNew?: never });
 
 export const EntityHeader = (props: EntityHeaderProps) => {
   const { title, description, newButtonLabel, disabled, isCreating, onNew, newButtonHref } = props;

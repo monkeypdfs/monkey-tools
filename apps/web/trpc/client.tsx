@@ -11,9 +11,6 @@ import { createTRPCContext } from "@trpc/tanstack-react-query";
 
 export const { TRPCProvider, useTRPC } = createTRPCContext<AppRouter>();
 
-// Export trpc alias for convenience
-export const trpc = useTRPC;
-
 let browserQueryClient: QueryClient;
 
 function getQueryClient() {
