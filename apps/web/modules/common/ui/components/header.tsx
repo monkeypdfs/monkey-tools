@@ -26,11 +26,6 @@ export const Header = async () => {
 
         {/* Action Buttons */}
         <div className="hidden md:flex items-center gap-3">
-          <Link href="https://designonline.com.br" target="_blank" rel="noopener noreferrer">
-            <Button variant="outline" size="sm" className="border-border text-foreground hover:bg-muted">
-              DesignOnline
-            </Button>
-          </Link>
           <Link href="/tools">
             <Button size="sm" className="btn-gradient-secondary text-secondary-foreground font-medium">
               Usar Ferramentas
