@@ -1,4 +1,4 @@
-# Monkey Tools 🛠️
+# Monkey Tool 🛠️
 
 A comprehensive, industry-standard suite of online file manipulation tools built with **Next.js**, **TurboRepo**, and a microservices-inspired architecture. This monorepo hosts a high-performance web application and a dedicated background worker for heavy processing tasks like PDF conversion.
 
