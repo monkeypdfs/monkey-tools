@@ -272,11 +272,6 @@
 .hero-section {
   background: linear-gradient(180deg, hsl(var(--primary) / 0.06) 0%, hsl(var(--background)) 100%);
 }
-
-.tool-page-header {
-  background: linear-gradient(180deg, hsl(var(--primary) / 0.08) 0%, hsl(var(--background)) 100%);
-}
-
 .upload-zone {
   border: 2px dashed hsl(var(--primary) / 0.3);
   background-color: hsl(var(--primary) / 0.02);

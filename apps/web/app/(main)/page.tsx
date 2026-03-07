@@ -46,7 +46,7 @@ export default async function Home() {
       pdfCategory = await caller.categories.getCategoryWithTools({ slug });
       break;
     } catch {
-      continue;
+      console.error(`Category with slug "${slug}" not found.`);
     }
   }
 
@@ -74,9 +74,9 @@ export default async function Home() {
         iconColor: tool.iconColor,
         bgColor: tool.bgColor,
         category: {
-          _id: pdfCategory!._id,
-          name: pdfCategory!.name,
-          slug: pdfCategory!.slug,
+          _id: pdfCategory._id,
+          name: pdfCategory.name,
+          slug: pdfCategory.slug,
         },
       })) ?? [];
 

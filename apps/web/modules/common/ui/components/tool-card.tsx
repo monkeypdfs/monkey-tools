@@ -31,10 +31,7 @@ const PASTEL_COLORS_BY_INDEX: Array<{ colorClass: string; bgColorClass: string }
 ];
 
 /** Map tool slug or category to pastel card color (icon + top strip) */
-function getToolColorClasses(
-  categorySlug: string,
-  toolSlug: string
-): { colorClass: string; bgColorClass: string } {
+function getToolColorClasses(categorySlug: string, toolSlug: string): { colorClass: string; bgColorClass: string } {
   const s = toolSlug.replace(/^\//, "").toLowerCase();
   const byTool: Record<string, { colorClass: string; bgColorClass: string }> = {
     "compress-pdf": { colorClass: "bg-tool-compress", bgColorClass: "bg-tool-compress-bg" },
@@ -67,32 +64,22 @@ function getToolColorClasses(
   return byCategory[categorySlug] ?? { colorClass: "bg-tool-merge", bgColorClass: "bg-tool-merge-bg" };
 }
 
-export const ToolCard = ({
-  name,
-  description,
-  categorySlug,
-  toolSlug,
-  icon,
-  seoSnippet,
-  colorIndex,
-}: ToolCardProps) => {
+export const ToolCard = ({ name, description, categorySlug, toolSlug, icon, seoSnippet, colorIndex }: ToolCardProps) => {
   const slug = toolSlug.replace(/^\//, "");
   const { colorClass, bgColorClass } =
     typeof colorIndex === "number"
-      ? PASTEL_COLORS_BY_INDEX[colorIndex % PASTEL_COLORS_BY_INDEX.length]
+      ? (PASTEL_COLORS_BY_INDEX[colorIndex % PASTEL_COLORS_BY_INDEX.length] ?? getToolColorClasses(categorySlug, slug))
       : getToolColorClasses(categorySlug, slug);
   const iconName = icon ? toLucideIconName(icon) : null;
 
   return (
     <Link
       href={`/tools/${categorySlug}/${slug}`}
-      className="group block rounded-2xl border bg-card tool-card-hover overflow-hidden"
+      className="block overflow-hidden border group rounded-2xl bg-card tool-card-hover"
       style={{ boxShadow: "var(--shadow-sm)" }}
     >
       <div className={`px-6 pt-6 pb-4 ${bgColorClass}`}>
-        <div
-          className={`inline-flex items-center justify-center w-14 h-14 rounded-xl mb-3 ${colorClass}`}
-        >
+        <div className={`inline-flex items-center justify-center w-14 h-14 rounded-xl mb-3 ${colorClass}`}>
           {iconName ? (
             <DynamicIcon
               name={iconName as IconName}
@@ -103,15 +90,11 @@ export const ToolCard = ({
             <FileText className="h-7 w-7 text-primary-foreground" />
           )}
         </div>
-        <h3 className="font-bold text-lg text-foreground mb-1 group-hover:text-primary transition-colors">
-          {name}
-        </h3>
+        <h3 className="mb-1 text-lg font-bold transition-colors text-foreground group-hover:text-primary">{name}</h3>
         <p className="text-sm text-muted-foreground line-clamp-3">{description}</p>
       </div>
       <div className="px-6 py-4 border-t bg-card">
-        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
-          {seoSnippet || description}
-        </p>
+        <p className="text-xs leading-relaxed text-muted-foreground line-clamp-3">{seoSnippet || description}</p>
       </div>
     </Link>
   );

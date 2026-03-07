@@ -25,11 +25,7 @@ interface RelatedToolsProps {
   categorySlug: string;
 }
 
-export function RelatedTools({
-  currentToolId,
-  tools,
-  categorySlug,
-}: RelatedToolsProps) {
+export function RelatedTools({ currentToolId, tools, categorySlug }: RelatedToolsProps) {
   const related = tools.filter((t) => t._id !== currentToolId).slice(0, 6);
   if (related.length === 0) return null;
 
@@ -37,10 +33,8 @@ export function RelatedTools({
 
   return (
     <div className="seo-section">
-      <h2 className="text-xl font-bold mb-4 text-foreground">
-        Ferramentas Relacionadas
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <h2 className="mb-4 text-xl font-bold text-foreground">Ferramentas Relacionadas</h2>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {related.map((tool) => {
           const href = tool.link.startsWith("/")
             ? `/tools/${categorySlug}${tool.link}`
@@ -52,19 +46,19 @@ export function RelatedTools({
               href={href}
               className={`flex items-center justify-between px-4 py-3 rounded-xl ${colorClass} text-foreground font-medium text-sm hover:opacity-90 transition-opacity`}
             >
-              <span className="flex items-center gap-2 min-w-0">
+              <span className="flex items-center min-w-0 gap-2">
                 {iconName ? (
                   <DynamicIcon
                     name={iconName as IconName}
-                    className="h-4 w-4 shrink-0"
-                    fallback={() => <Wrench className="h-4 w-4 shrink-0" />}
+                    className="w-4 h-4 shrink-0"
+                    fallback={() => <Wrench className="w-4 h-4 shrink-0" />}
                   />
                 ) : (
-                  <Wrench className="h-4 w-4 shrink-0" />
+                  <Wrench className="w-4 h-4 shrink-0" />
                 )}
                 <span className="truncate">{tool.title}</span>
               </span>
-              <ArrowRight className="h-4 w-4 shrink-0 ml-2" />
+              <ArrowRight className="w-4 h-4 ml-2 shrink-0" />
             </Link>
           );
         })}

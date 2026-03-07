@@ -12,7 +12,7 @@ async function getPdfToolLinks(): Promise<Array<{ _id: string; name: string; hre
       pdfCategory = await caller.categories.getCategoryWithTools({ slug });
       break;
     } catch {
-      continue;
+      console.error(`Category with slug "${slug}" not found.`);
     }
   }
   if (!pdfCategory) {
@@ -38,10 +38,7 @@ async function getPdfToolLinks(): Promise<Array<{ _id: string; name: string; hre
 }
 
 export const Footer = async () => {
-  const [toolLinks, customPages] = await Promise.all([
-    getPdfToolLinks(),
-    caller.pages.getFooterPages(),
-  ]);
+  const [toolLinks, customPages] = await Promise.all([getPdfToolLinks(), caller.pages.getFooterPages()]);
 
   return (
     <footer className="border-t bg-card py-10 mt-16">
@@ -76,10 +73,7 @@ export const Footer = async () => {
             <ul className="space-y-2.5 text-muted-foreground">
               {customPages.map((page) => (
                 <li key={page._id}>
-                  <Link
-                    href={`/${page.slug}`}
-                    className="hover:text-primary transition-colors"
-                  >
+                  <Link href={`/${page.slug}`} className="hover:text-primary transition-colors">
                     {page.footerLabel || page.title}
                   </Link>
                 </li>

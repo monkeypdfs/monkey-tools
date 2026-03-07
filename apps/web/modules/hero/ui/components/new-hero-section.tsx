@@ -29,19 +29,18 @@ export const NewHeroSection = ({ heroSection, tools = [] }: NewHeroSectionProps)
   const badge = content.badge ?? "100% gratuito · Sem cadastro · Sem instalação";
   const heading = content.heading ?? "Ferramentas PDF";
   const headingHighlight = content.headingHighlight ?? "Online Grátis";
-  const description =
-    content.description ?? "Simples, rápido e seguro. Transforme seus documentos em segundos.";
+  const description = content.description ?? "Simples, rápido e seguro. Transforme seus documentos em segundos.";
 
   return (
     <section className="hero-section py-14 md:py-20">
-      <div className="container text-center px-4 mx-auto">
+      <div className="container px-4 mx-auto text-center">
         {/* Badge: light blue bg, subtle blue border, blue text and icon */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-primary text-sm font-normal mb-6">
-          <Zap className="h-4 w-4 text-primary" />
+          <Zap className="w-4 h-4 text-primary" />
           {badge}
         </div>
         {/* Headline: dark charcoal for main text, solid blue for highlight */}
-        <h1 className="text-4xl md:text-6xl font-black mb-4 tracking-tight text-foreground">
+        <h1 className="mb-4 text-4xl font-black tracking-tight md:text-6xl text-foreground">
           {heading}
           {headingHighlight ? (
             <>
@@ -51,12 +50,12 @@ export const NewHeroSection = ({ heroSection, tools = [] }: NewHeroSectionProps)
           ) : null}
         </h1>
         {/* Subtitle: muted grey, even two-line height */}
-        <p className="text-lg text-muted-foreground mb-12 max-w-md mx-auto min-h-[2.75rem] line-clamp-2 leading-relaxed">
+        <p className="max-w-md mx-auto mb-12 text-lg leading-relaxed text-muted-foreground min-h-11 line-clamp-2">
           {description}
         </p>
 
         {/* Tool grid inline (remix style) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-5xl mx-auto">
+        <div className="grid max-w-5xl grid-cols-1 gap-5 mx-auto sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {tools.map((tool, index) => (
             <ToolCard
               key={tool._id}

@@ -63,7 +63,7 @@ export const ToolView = async ({ toolCategory, tool }: ToolViewProps) => {
 
         {/* Tool area - centered */}
         <div className="max-w-2xl mx-auto mb-12">
-          <div className="p-6 md:p-8 border rounded-2xl bg-card border-border">
+          <div className="p-6 border md:p-8 rounded-2xl bg-card border-border">
             <Suspense fallback={<ToolLoading />}>
               <PDFLibProvider>
                 <ToolComponent />
@@ -73,15 +73,13 @@ export const ToolView = async ({ toolCategory, tool }: ToolViewProps) => {
         </div>
 
         {/* Below the fold: single column max-w-3xl, seo-section cards */}
-        <div className="max-w-3xl mx-auto pb-8 space-y-8">
+        <div className="max-w-3xl pb-8 mx-auto space-y-8">
           <AdPlaceholder position="bottom" />
 
           {/* Visual Steps */}
           {toolData.visualSteps && toolData.visualSteps.length > 0 && (
             <div className="seo-section">
-              <h2 className="text-xl font-bold mb-4 text-foreground">
-                {toolData.stepsTitle ?? `How to use ${toolData.title}`}
-              </h2>
+              <h2 className="mb-4 text-xl font-bold text-foreground">{toolData.stepsTitle ?? `How to use ${toolData.title}`}</h2>
               <ToolSteps steps={toolData.visualSteps} />
             </div>
           )}
@@ -104,9 +102,7 @@ export const ToolView = async ({ toolCategory, tool }: ToolViewProps) => {
           {/* FAQs */}
           {toolData.faqs && toolData.faqs.length > 0 && (
             <div className="seo-section">
-              <h2 className="text-xl font-bold mb-4 text-foreground">
-                Perguntas Frequentes
-              </h2>
+              <h2 className="mb-4 text-xl font-bold text-foreground">Perguntas Frequentes</h2>
               <ToolFAQ faqs={toolData.faqs} />
               <FAQSchema faqs={toolData.faqs} />
             </div>
@@ -115,18 +111,12 @@ export const ToolView = async ({ toolCategory, tool }: ToolViewProps) => {
           {/* Closing Text */}
           {toolData.closingText && (
             <div className="seo-section">
-              <p className="text-base leading-relaxed text-muted-foreground">
-                {toolData.closingText}
-              </p>
+              <p className="text-base leading-relaxed text-muted-foreground">{toolData.closingText}</p>
             </div>
           )}
 
           {/* Related Tools - remix style */}
-          <RelatedTools
-            currentToolId={toolData._id as string}
-            tools={category.tools}
-            categorySlug={toolCategory}
-          />
+          <RelatedTools currentToolId={toolData._id as string} tools={category.tools} categorySlug={toolCategory} />
         </div>
       </div>
     );

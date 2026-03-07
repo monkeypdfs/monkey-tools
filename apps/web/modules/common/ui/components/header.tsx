@@ -1,7 +1,6 @@
 import { Logo } from "./logo";
 import { HeaderNav } from "./header-nav";
 import { caller } from "@/trpc/server";
-import Link from "next/link";
 
 const PDF_CATEGORY_SLUGS = ["pdf-tools", "pdf", "ferramentas-pdf"];
 const MAX_NAV_TOOLS = 6;
@@ -13,7 +12,7 @@ async function getPdfToolLinks(): Promise<Array<{ _id: string; name: string; hre
       pdfCategory = await caller.categories.getCategoryWithTools({ slug });
       break;
     } catch {
-      continue;
+      console.error(`Category with slug "${slug}" not found.`);
     }
   }
   if (!pdfCategory) {
@@ -41,19 +40,12 @@ export const Header = async () => {
   const toolLinks = await getPdfToolLinks();
 
   return (
-    <header className="relative border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-50">
-      <div className="container relative flex h-16 items-center justify-between px-4 mx-auto">
+    <header className="relative top-0 z-50 border-b bg-card/95 backdrop-blur supports-backdrop-filter:bg-card/80">
+      <div className="container relative flex items-center justify-between h-16 px-4 mx-auto">
         <Logo />
         <HeaderNav toolLinks={toolLinks} />
-        <div className="hidden lg:flex items-center gap-3 shrink-0">
-          <Link
-            href="/tools"
-            className="px-3 py-2 rounded-lg text-sm font-semibold btn-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity"
-          >
-            Usar Ferramentas
-          </Link>
-        </div>
+        <div className="hidden lg:block shrink-0 w-34.5" aria-hidden="true" />
       </div>
     </header>
   );
-}
+};
